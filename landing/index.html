@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Percept — Ambient Voice Intelligence for AI Agents</title>
+  <meta name="description" content="Open source voice → action pipeline with Context Intelligence. Entity extraction, relationship graphs, semantic search, speaker ID. Give your AI agent ears.">
+  <meta property="og:title" content="Percept — Give your AI agent ears">
+  <meta property="og:description" content="Open source ambient voice intelligence. Not just transcription — the reasoning that connects audio to memory to action.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://getpercept.ai">
+  <meta property="og:image" content="https://getpercept.ai/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Percept — Ambient Voice Intelligence for AI Agents">
+  <meta name="twitter:description" content="Open source voice → action pipeline. Entity extraction, relationship graphs, semantic search. Your agent understands.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg-card: #111113;
+      --bg-card-hover: #18181b;
+      --border: #222225;
+      --border-subtle: #1a1a1d;
+      --text: #e4e4e7;
+      --text-muted: #71717a;
+      --accent: #f59e0b;
+      --accent-dim: rgba(245, 158, 11, 0.12);
+      --accent-glow: rgba(245, 158, 11, 0.06);
+      --green: #22c55e;
+      --green-dim: rgba(34, 197, 94, 0.12);
+      --blue: #3b82f6;
+      --blue-dim: rgba(59, 130, 246, 0.12);
+      --purple: #a855f7;
+      --purple-dim: rgba(168, 85, 247, 0.12);
+      --radius: 12px;
+      --radius-lg: 16px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 16px 0;
+      background: rgba(10, 10, 11, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s;
+    }
+    nav.scrolled { border-bottom-color: var(--border); }
+    .nav-inner { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .logo { font-weight: 700; font-size: 1.1rem; color: var(--text); text-decoration: none; }
+    .logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
+      text-decoration: none; transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { background: #fbbf24; transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--text-muted); }
+    .btn-sm { padding: 6px 14px; font-size: 0.85rem; }
+
+    /* HERO */
+    .hero {
+      padding: 160px 0 80px;
+      text-align: center;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 80px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 20px;
+      background: var(--accent-dim); border: 1px solid rgba(245,158,11,0.2);
+      font-size: 0.8rem; font-weight: 600; color: var(--accent);
+      margin-bottom: 24px;
+    }
+    .hero-badge .pulse {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.2rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      letter-spacing: -0.03em;
+    }
+    .hero h1 .accent { color: var(--accent); }
+    .hero-sub {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto 16px;
+      line-height: 1.7;
+    }
+    .hero-detail {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 540px;
+      margin: 0 auto 40px;
+      opacity: 0.7;
+    }
+    .hero-ctas { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    /* SECTION SHARED */
+    .section { padding: 100px 0; }
+    .section + .section { border-top: 1px solid var(--border-subtle); }
+    .section-label {
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+    .section-sub {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto 56px;
+      font-size: 1.05rem;
+    }
+
+    /* DEMO CARDS */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .demo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: all 0.25s;
+    }
+    .demo-card:hover { background: var(--bg-card-hover); border-color: #333; }
+    .demo-icon { font-size: 1.4rem; margin-bottom: 10px; }
+    .demo-voice {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      display: block;
+      line-height: 1.5;
+    }
+    .demo-result { font-size: 0.88rem; color: var(--text-muted); }
+    .demo-result strong { color: var(--green); }
+
+    /* CIL SECTION */
+    .cil-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .cil-text .cil-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--purple);
+      background: var(--purple-dim);
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    .cil-text h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .cil-text p {
+      color: var(--text-muted);
+      font-size: 1.02rem;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .cil-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .cil-features li {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .cil-features li::before {
+      content: "◉";
+      color: var(--purple);
+      font-size: 0.7rem;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    .cil-visual {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 2;
+    }
+    .cil-visual .line { margin-bottom: 2px; }
+    .cil-visual .comment { color: #444; }
+    .cil-visual .key { color: var(--purple); }
+    .cil-visual .val { color: var(--green); }
+    .cil-visual .type { color: var(--accent); }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .step {
+      text-align: center;
+      flex: 1;
+      min-width: 180px;
+      max-width: 240px;
+    }
+    .step-num {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+    }
+    .step h3 { font-size: 1.05rem; margin-bottom: 8px; }
+    .step p { font-size: 0.88rem; color: var(--text-muted); }
+    .step-arrow {
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      padding-top: 12px;
+      flex-shrink: 0;
+      opacity: 0.4;
+    }
+
+    /* FEATURE GRID */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      transition: all 0.25s;
+    }
+    .feature-card:hover { border-color: #333; }
+    .feature-card .fc-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 14px;
+    }
+    .feature-card h4 { font-size: 1rem; margin-bottom: 6px; font-weight: 600; }
+    .feature-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+    .fc-amber { background: var(--accent-dim); }
+    .fc-green { background: var(--green-dim); }
+    .fc-blue { background: var(--blue-dim); }
+    .fc-purple { background: var(--purple-dim); }
+
+    /* HARDWARE */
+    .hw-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .hw-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      text-align: center;
+      transition: all 0.25s;
+    }
+    .hw-card:hover { border-color: #333; }
+    .hw-card .hw-icon { font-size: 2rem; margin-bottom: 10px; }
+    .hw-card h4 { margin-bottom: 6px; }
+    .hw-card .hw-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px; }
+    .hw-status { font-size: 0.78rem; font-weight: 600; }
+    .hw-status.live { color: var(--green); }
+    .hw-status.beta { color: var(--accent); }
+    .hw-status.soon { color: var(--text-muted); }
+
+    /* PROTOCOL */
+    .protocol-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .protocol-text h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .protocol-text p {
+      color: var(--text-muted);
+      font-size: 1.02rem;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    .protocol-badges {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;
+    }
+    .protocol-badges .badge {
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--blue-dim);
+      color: var(--blue);
+      font-weight: 500;
+    }
+
+    /* CODE */
+    .code-block {
+      background: #0d0d0f;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+    .code-header {
+      background: #161618;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .code-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .code-dot:nth-child(1) { background: #ff5f57; }
+    .code-dot:nth-child(2) { background: #ffbd2e; }
+    .code-dot:nth-child(3) { background: #28c840; }
+    .code-header span:last-child { margin-left: auto; }
+    pre {
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.83rem;
+      line-height: 1.9;
+      overflow-x: auto;
+    }
+    .cm { color: #555; }
+    .cmd { color: var(--text); }
+    .badges {
+      display: flex; gap: 8px; justify-content: center; margin-top: 24px; flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* OPENCLAW */
+    .oc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .oc-text h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .oc-text p {
+      color: var(--text-muted);
+      font-size: 1.02rem;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    .oc-code {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 2;
+    }
+    .oc-code .comment { color: #444; }
+    .oc-code .label-amber { color: var(--accent); }
+    .oc-code .label-green { color: var(--green); }
+    .oc-code .label-blue { color: var(--blue); }
+
+    /* PRICING */
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      max-width: 480px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .pricing-card .price { font-size: 3rem; font-weight: 800; margin-bottom: 4px; }
+    .pricing-card .price-sub { color: var(--text-muted); margin-bottom: 28px; font-size: 0.95rem; }
+    .pricing-card .divider { border-top: 1px solid var(--border); margin: 24px 0; }
+    .pricing-card .hosted {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+    .pricing-card .hosted strong { color: var(--text); }
+
+    /* WAITLIST */
+    .waitlist {
+      padding: 100px 0;
+      text-align: center;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .waitlist h2 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .waitlist p {
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      font-size: 1.05rem;
+    }
+    .waitlist-form {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .waitlist-form input {
+      flex: 1;
+      min-width: 240px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .waitlist-form input:focus { border-color: var(--accent); }
+    .waitlist-form input::placeholder { color: var(--text-muted); }
+    .waitlist-success {
+      display: none;
+      color: var(--green);
+      font-weight: 600;
+      margin-top: 16px;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 48px 0 32px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .footer-brand p { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-bottom {
+      margin-top: 32px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ANIMATIONS */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .fade-up.d1 { transition-delay: 0.1s; }
+    .fade-up.d2 { transition-delay: 0.2s; }
+    .fade-up.d3 { transition-delay: 0.3s; }
+
+    @media (max-width: 768px) {
+      .nav-links a:not(.btn) { display: none; }
+      .step-arrow { display: none; }
+      .steps { flex-direction: column; align-items: center; }
+      .cil-grid, .protocol-grid, .oc-grid { grid-template-columns: 1fr; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .section { padding: 72px 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="logo">◉ <span>Percept</span></a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#cil">Intelligence</a>
+        <a href="#protocol">Protocol</a>
+        <a href="https://github.com/davidemanuelDEV/percept" class="btn btn-sm btn-outline" target="_blank">GitHub →</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge fade-up"><span class="pulse"></span> Pipeline live &mdash; dogfooding daily</div>
+      <h1 class="fade-up d1">Ambient voice intelligence<br>for <span class="accent">AI agents.</span></h1>
+      <p class="hero-sub fade-up d2">Not just transcription. Percept builds a knowledge graph from your conversations — entity extraction, speaker identification, relationship mapping, semantic search — so your agent actually <em>understands</em> what's being said.</p>
+      <p class="hero-detail fade-up d2">Open source · Local-first · Works with 🦞 OpenClaw or any agent framework</p>
+      <div class="hero-ctas fade-up d3">
+        <a href="https://github.com/davidemanuelDEV/percept" class="btn btn-primary" target="_blank">⭐ Star on GitHub</a>
+        <a href="#waitlist" class="btn btn-outline">Join Waitlist</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- USE CASES -->
+  <section class="section" id="demos">
+    <div class="container">
+      <div class="section-label fade-up">What it feels like</div>
+      <h2 class="section-title fade-up">Speak. It happens.</h2>
+      <p class="section-sub fade-up">Seven action types by voice — email, text, reminder, search, calendar, note, and order.</p>
+      <div class="demo-grid">
+        <div class="demo-card fade-up">
+          <div class="demo-icon">📧</div>
+          <span class="demo-voice">"Hey Atlas, email Sarah about the quarterly review"</span>
+          <div class="demo-result"><strong>→ Contact resolved, email sent.</strong> Percept knows Sarah's address from your relationship graph.</div>
+        </div>
+        <div class="demo-card fade-up">
+          <div class="demo-icon">📋</div>
+          <span class="demo-voice">Walk out of a meeting</span>
+          <div class="demo-result"><strong>→ Auto-summary delivered</strong> with action items, attendees identified, entities extracted — in 60 seconds.</div>
+        </div>
+        <div class="demo-card fade-up">
+          <div class="demo-icon">⏰</div>
+          <span class="demo-voice">"Hey Atlas, remind me in thirty minutes to call the contractor"</span>
+          <div class="demo-result"><strong>→ Reminder set.</strong> Spoken numbers parsed naturally — "an hour and a half" just works.</div>
+        </div>
+        <div class="demo-card fade-up">
+          <div class="demo-icon">🔍</div>
+          <span class="demo-voice">"What did we discuss about the API migration last week?"</span>
+          <div class="demo-result"><strong>→ Semantic search</strong> across all conversations. Vector + full-text, speaker-attributed.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTEXT INTELLIGENCE LAYER -->
+  <section class="section" id="cil">
+    <div class="container">
+      <div class="cil-grid">
+        <div class="cil-text fade-up">
+          <div class="cil-tag">The Moat</div>
+          <h2>Context Intelligence Layer</h2>
+          <p>Transcription is a commodity. What happens <em>after</em> is what matters. The CIL transforms raw speech into structured, actionable context — so "email the client" actually works because your agent knows <em>who the client is</em>.</p>
+          <ul class="cil-features">
+            <li>Two-pass entity extraction — fast regex + LLM semantic pass</li>
+            <li>Relationship graph with weighted edges and linear decay</li>
+            <li>5-tier entity resolution — exact, fuzzy, contextual, recency, semantic</li>
+            <li>NVIDIA NIM embeddings + LanceDB vector search</li>
+            <li>FTS5 full-text search with porter stemming</li>
+            <li>Context packets — single JSON blob with everything an agent needs</li>
+            <li>SQLite persistence — single file, zero deps, WAL mode</li>
+          </ul>
+        </div>
+        <div class="cil-visual fade-up">
+          <div class="line comment">// Context Packet for "email the client"</div>
+          <div class="line">{</div>
+          <div class="line">&nbsp;&nbsp;<span class="key">"resolved_entity"</span>: <span class="val">"Sarah Chen"</span>,</div>
+          <div class="line">&nbsp;&nbsp;<span class="key">"confidence"</span>: <span class="type">0.94</span>,</div>
+          <div class="line">&nbsp;&nbsp;<span class="key">"resolution_path"</span>: <span class="val">"contextual"</span>,</div>
+          <div class="line">&nbsp;&nbsp;<span class="key">"evidence"</span>: [</div>
+          <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="val">"mentioned 3x in last conversation"</span>,</div>
+          <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="val">"relationship: client_of (weight: 0.87)"</span></div>
+          <div class="line">&nbsp;&nbsp;],</div>
+          <div class="line">&nbsp;&nbsp;<span class="key">"contact"</span>: {</div>
+          <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"email"</span>: <span class="val">"sarah@acme.com"</span>,</div>
+          <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"org"</span>: <span class="val">"Acme Corp"</span></div>
+          <div class="line">&nbsp;&nbsp;}</div>
+          <div class="line">}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES GRID -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-label fade-up">Built, not planned</div>
+      <h2 class="section-title fade-up">Everything that's working today.</h2>
+      <p class="section-sub fade-up">Shipped in 5 days. Dogfooded daily. Not a roadmap — a product.</p>
+      <div class="feature-grid">
+        <div class="feature-card fade-up">
+          <div class="fc-icon fc-purple">🧠</div>
+          <h4>Entity Extraction</h4>
+          <p>Two-pass pipeline extracts people, orgs, locations, projects, and topics. Maps relationships automatically from co-occurrence.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="fc-icon fc-amber">🗣️</div>
+          <h4>Speaker Identification</h4>
+          <p>Knows who's talking. Resolves contacts, builds per-speaker analytics. "That was Sarah" teaches it new voices.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="fc-icon fc-green">🔍</div>
+          <h4>Semantic Search</h4>
+          <p>NVIDIA NIM embeddings + LanceDB vectors, with FTS5 keyword fallback. Search what anyone said, anytime.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="fc-icon fc-blue">📊</div>
+          <h4>Dashboard</h4>
+          <p>Full management UI — conversation history, speaker management, contacts, settings, analytics, search, data export and purge.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="fc-icon fc-amber">🔒</div>
+          <h4>Three-Tier Transcriber</h4>
+          <p>Local (faster-whisper) → NVIDIA Riva → Cloud. Privacy by default. Your audio never leaves your machine unless you choose.</p>
+        </div>
+        <div class="feature-card fade-up">
+          <div class="fc-icon fc-green">⏰</div>
+          <h4>TTL Auto-Purge</h4>
+          <p>Configurable retention — utterances 30d, summaries 90d, relationships 180d. Your data, your rules. Export anytime.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HARDWARE -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label fade-up">Two form factors at launch</div>
+      <h2 class="section-title fade-up">Works with what you wear.</h2>
+      <p class="section-sub fade-up">Omi pendant for ambient intelligence. Apple Watch for push-to-talk. More coming.</p>
+      <div class="hw-grid">
+        <div class="hw-card fade-up">
+          <div class="hw-icon">📿</div>
+          <h4>Omi Pendant</h4>
+          <div class="hw-desc">All-day battery. BLE to phone. Forget it's there.</div>
+          <div class="hw-status live">✓ Live</div>
+        </div>
+        <div class="hw-card fade-up">
+          <div class="hw-icon">⌚</div>
+          <h4>Apple Watch</h4>
+          <div class="hw-desc">Push-to-talk walkie-talkie style. Raise to speak.</div>
+          <div class="hw-status beta">Beta — launching with v1</div>
+        </div>
+        <div class="hw-card fade-up">
+          <div class="hw-icon">🎤</div>
+          <h4>Any Webhook Source</h4>
+          <div class="hw-desc">Standard HTTP endpoint. POST transcripts from anything.</div>
+          <div class="hw-status live">✓ Ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PERCEPT PROTOCOL -->
+  <section class="section" id="protocol">
+    <div class="container">
+      <div class="protocol-grid">
+        <div class="protocol-text fade-up">
+          <div class="section-label" style="text-align:left">Open Standard</div>
+          <h2>Percept Protocol</h2>
+          <p>A framework-agnostic JSON schema for voice → intent → action handoff. Six event types. Three transports. Unix composable.</p>
+          <p>Your agent framework doesn't matter. LangChain, CrewAI, AutoGen, 🦞 OpenClaw, or a bash script — if it reads JSON, it works with Percept.</p>
+          <div class="protocol-badges">
+            <span class="badge">transcript</span>
+            <span class="badge">conversation</span>
+            <span class="badge">intent</span>
+            <span class="badge">action_request</span>
+            <span class="badge">action_response</span>
+            <span class="badge">summary</span>
+          </div>
+        </div>
+        <div class="code-block fade-up">
+          <div class="code-header">
+            <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+            <span>Terminal</span>
+          </div>
+          <pre><code><span class="cm"># Pipe voice events to any consumer</span>
+<span class="cmd">percept listen \</span>
+<span class="cmd">  | jq 'select(.type == "intent")' \</span>
+<span class="cmd">  | my-agent --stdin</span>
+
+<span class="cm"># Or use webhooks</span>
+<span class="cmd">percept serve \</span>
+<span class="cmd">  --webhook https://my-agent.com/voice</span>
+
+<span class="cm"># Or WebSocket</span>
+<span class="cmd">percept serve --ws</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPENCLAW -->
+  <section class="section">
+    <div class="container">
+      <div class="oc-grid">
+        <div class="oc-code fade-up">
+          <div class="comment">// Voice → Context → Agent → Action</div>
+          <br>
+          <div><span class="label-amber">You:</span> "Hey Atlas, email the client<br>&nbsp;&nbsp;&nbsp;&nbsp;about the proposal deadline"</div>
+          <br>
+          <div class="comment">// CIL resolves "the client"</div>
+          <div><span class="label-green">Percept:</span> entity: Sarah Chen (0.94)</div>
+          <div><span class="label-green">Percept:</span> action: email → sarah@acme.com</div>
+          <br>
+          <div class="comment">// 🦞 OpenClaw agent executes</div>
+          <div><span class="label-blue">Agent:</span> ✉️ Email sent to Sarah Chen</div>
+          <br>
+          <div class="comment">// Confirmation delivered</div>
+          <div><span class="label-amber">Text:</span> "Emailed Sarah about the<br>&nbsp;&nbsp;&nbsp;&nbsp;proposal deadline ✓"</div>
+        </div>
+        <div class="oc-text fade-up">
+          <div class="section-label" style="text-align:left">🦞 First-Class Integration</div>
+          <h2>Built for <span style="color:var(--accent)">🦞 OpenClaw</span></h2>
+          <p>Percept is designed as a native 🦞 OpenClaw skill — your agent gets ears, context intelligence, and ambient awareness out of the box.</p>
+          <p>Every voice command flows through your agent's full context: memory, tools, integrations, relationship graph. "Email the client" just works because the system <em>knows</em>.</p>
+          <p style="font-size:0.9rem; opacity:0.7;">Works standalone too. Any framework that consumes JSON can integrate via the Percept Protocol.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="section">
+    <div class="container" style="text-align:center">
+      <div class="section-label fade-up">Open Source</div>
+      <h2 class="section-title fade-up">Self-host in 5 minutes.</h2>
+      <p class="section-sub fade-up">MIT license. Your audio stays on your machine. Single SQLite file — nothing to configure.</p>
+      <div class="code-block fade-up">
+        <div class="code-header">
+          <span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span>
+          <span>Terminal</span>
+        </div>
+        <pre><code><span class="cm"># Install</span>
+<span class="cmd">pip install getpercept</span>
+
+<span class="cm"># Start (receiver + dashboard + CIL)</span>
+<span class="cmd">percept serve</span>
+
+<span class="cm"># Dashboard at :8960 · Receiver at :8900</span>
+<span class="cm"># Your agent can hear now.</span></code></pre>
+      </div>
+      <div class="badges fade-up">
+        <span class="badge">MIT License</span>
+        <span class="badge">Python 3.10+</span>
+        <span class="badge">Local-First</span>
+        <span class="badge">SQLite</span>
+        <span class="badge">NVIDIA NIM</span>
+        <span class="badge">🦞 OpenClaw</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing">
+    <div class="container" style="text-align:center">
+      <div class="section-label fade-up">Pricing</div>
+      <h2 class="section-title fade-up">Self-host free. Forever.</h2>
+      <p class="section-sub fade-up">Open source is the product, not a teaser. Run it on your hardware, no strings attached.</p>
+      <div class="pricing-card fade-up">
+        <div class="price">$0</div>
+        <div class="price-sub">Self-hosted · MIT License · No limits</div>
+        <div class="divider"></div>
+        <div class="hosted">
+          ☁️ <strong>Hosted API coming soon.</strong><br>
+          Don't want to self-host? Join the waitlist — we'll notify you when the managed cloud is ready.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAITLIST -->
+  <section class="waitlist" id="waitlist">
+    <div class="container">
+      <h2 class="fade-up">Get early access.</h2>
+      <p class="fade-up">Be first to know when the hosted API launches and the repo goes public.</p>
+      <form class="waitlist-form fade-up" onsubmit="handleWaitlist(event)">
+        <input type="email" placeholder="your@email.com" required id="waitlist-email">
+        <button type="submit" class="btn btn-primary">Join Waitlist</button>
+      </form>
+      <div class="waitlist-success" id="waitlist-success">🎉 You're on the list. We'll be in touch.</div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="logo">◉ <span>Percept</span></div>
+          <p>Ambient voice intelligence. Powered by 🦞 OpenClaw.</p>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/davidemanuelDEV/percept" target="_blank">GitHub</a>
+          <a href="https://x.com/clawdoor4agents" target="_blank">X</a>
+          <a href="mailto:hello@getpercept.ai">Contact</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Percept. MIT License.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll-triggered fade-up animations
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+    // Nav scroll state
+    window.addEventListener('scroll', () => {
+      document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t) t.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // Waitlist handler
+    function handleWaitlist(e) {
+      e.preventDefault();
+      const email = document.getElementById('waitlist-email').value;
+      console.log('Waitlist signup:', email);
+      document.querySelector('.waitlist-form').style.display = 'none';
+      document.getElementById('waitlist-success').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

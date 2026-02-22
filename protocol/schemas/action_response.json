@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://percept.dev/schemas/action_response.json",
+  "title": "ActionResponse",
+  "type": "object",
+  "required": ["type", "timestamp", "request_id", "status"],
+  "properties": {
+    "type": { "const": "action_response" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "request_id": { "type": "string" },
+    "status": { "type": "string", "enum": ["executed", "pending", "failed", "needs_human"] },
+    "result": { "type": "string" },
+    "error": { "type": ["string", "null"] }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://percept.dev/schemas/transcript_event.json",
+  "title": "TranscriptEvent",
+  "type": "object",
+  "required": ["type", "timestamp", "session_id", "segments"],
+  "properties": {
+    "type": { "const": "transcript" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "session_id": { "type": "string" },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["speaker", "text", "start", "end", "confidence"],
+        "properties": {
+          "speaker": { "type": "string" },
+          "text": { "type": "string" },
+          "start": { "type": "number" },
+          "end": { "type": "number" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}

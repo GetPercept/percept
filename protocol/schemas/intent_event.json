@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://percept.dev/schemas/intent_event.json",
+  "title": "IntentEvent",
+  "type": "object",
+  "required": ["type", "timestamp", "session_id", "wake_word_detected", "raw_text", "intent", "entities", "confidence"],
+  "properties": {
+    "type": { "const": "intent" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "session_id": { "type": "string" },
+    "wake_word_detected": { "type": "boolean" },
+    "raw_text": { "type": "string" },
+    "intent": { "type": "string", "enum": ["email", "text", "reminder", "search", "order", "calendar", "note", "unknown"] },
+    "entities": { "type": "object" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "context": { "type": "string" }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://percept.dev/schemas/summary_event.json",
+  "title": "SummaryEvent",
+  "type": "object",
+  "required": ["type", "timestamp", "session_id", "duration", "speakers", "summary_text", "action_items", "key_topics"],
+  "properties": {
+    "type": { "const": "summary" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "session_id": { "type": "string" },
+    "duration": { "type": "number" },
+    "speakers": { "type": "array", "items": { "type": "string" } },
+    "summary_text": { "type": "string" },
+    "action_items": { "type": "array", "items": { "type": "string" } },
+    "key_topics": { "type": "array", "items": { "type": "string" } }
+  }
+}

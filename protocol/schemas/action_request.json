@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://percept.dev/schemas/action_request.json",
+  "title": "ActionRequest",
+  "type": "object",
+  "required": ["type", "timestamp", "request_id", "intent", "params", "requires_confirmation", "human_required"],
+  "properties": {
+    "type": { "const": "action_request" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "request_id": { "type": "string" },
+    "intent": { "type": "string" },
+    "params": { "type": "object" },
+    "context": { "type": "string" },
+    "requires_confirmation": { "type": "boolean" },
+    "human_required": { "type": "boolean" }
+  }
+}
