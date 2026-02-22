@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import time
 from collections import Counter
 from datetime import datetime
@@ -18,6 +19,15 @@ from pathlib import Path
 from src.speaker_manager import resolve_speaker
 
 logger = logging.getLogger(__name__)
+
+# Binary path resolution with fallback
+def _get_binary_path(name: str) -> str:
+    """Get binary path dynamically with fallback."""
+    path = shutil.which(name)
+    if not path:
+        logger.warning(f"Binary '{name}' not found in PATH, action will be skipped")
+        return None
+    return path
 
 SUMMARY_LOG = Path(__file__).parent.parent / "data" / "summaries"
 SUMMARY_LOG.mkdir(parents=True, exist_ok=True)
@@ -51,10 +61,15 @@ async def get_calendar_context(start_time: float = None) -> str:
         Calendar context string, or empty string if unavailable.
     """
     try:
+        gog_path = _get_binary_path("gog")
+        if not gog_path:
+            return ""
+            
+        env = os.environ.copy()  # Inherit system PATH
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/gog", "cal", "list", "--from", "today", "--to", "today",
+            gog_path, "cal", "list", "--from", "today", "--to", "today",
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-            env={**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"},
+            env=env,
         )
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=10)
         if proc.returncode != 0:

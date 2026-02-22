@@ -11,7 +11,8 @@ from src.database import PerceptDB
 
 app = FastAPI(title="Percept Dashboard API")
 
-BASE = Path("/Users/jarvis/.openclaw/workspace/percept")
+# Use relative paths from dashboard directory
+BASE = Path(__file__).resolve().parent.parent
 DATA = BASE / "data"
 LIVE_TXT = Path("/tmp/percept-live.txt")
 DASHBOARD_HTML = Path(__file__).parent / "index.html"

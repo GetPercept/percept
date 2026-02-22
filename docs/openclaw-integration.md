@@ -45,11 +45,13 @@ For auto-summaries, Percept sends a `CONVERSATION_SUMMARY` prompt with the full 
 Percept forwards to OpenClaw by default. The relevant code in `src/receiver.py`:
 
 ```python
-proc = await asyncio.create_subprocess_exec(
-    "/opt/homebrew/bin/openclaw", "agent", "--message", msg, "--to", "+1XXXXXXXXXX",
-    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-    env=env,
-)
+openclaw_path = shutil.which("openclaw")
+if openclaw_path:
+    proc = await asyncio.create_subprocess_exec(
+        openclaw_path, "agent", "--message", msg, "--to", "+1XXXXXXXXXX",
+        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+        env=os.environ.copy(),
+    )
 ```
 
 To customize the delivery channel or target:
