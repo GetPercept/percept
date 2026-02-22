@@ -99,6 +99,78 @@ async def contacts():
         return json.loads(contacts_file.read_text())
     return {}
 
+# --- Address Book API Endpoints ---
+
+@app.get("/api/address-book/contacts")
+async def get_address_book_contacts(category: str = None):
+    """Get all address book contacts, optionally filtered by category."""
+    return db.get_all_address_book_contacts(category=category)
+
+@app.get("/api/address-book/contacts/{contact_id}")
+async def get_address_book_contact(contact_id: int):
+    """Get a single address book contact."""
+    contact = db.get_address_book_contact(contact_id)
+    if contact:
+        return contact
+    return {"error": "Contact not found"}, 404
+
+@app.post("/api/address-book/contacts")
+async def create_address_book_contact(request: Request):
+    """Create a new address book contact."""
+    try:
+        data = await request.json()
+        contact_id = db.save_address_book_contact(
+            first_name=data.get('first_name', ''),
+            last_name=data.get('last_name'),
+            alias=data.get('alias'),
+            category=data.get('category', 'personal'),
+            phone=data.get('phone'),
+            email=data.get('email'),
+            slack=data.get('slack'),
+            notes=data.get('notes')
+        )
+        return {"id": contact_id, "success": True}
+    except Exception as e:
+        return {"error": str(e)}, 400
+
+@app.put("/api/address-book/contacts/{contact_id}")
+async def update_address_book_contact(contact_id: int, request: Request):
+    """Update an address book contact."""
+    try:
+        data = await request.json()
+        success = db.update_address_book_contact(contact_id, **data)
+        if success:
+            return {"success": True}
+        else:
+            return {"error": "Contact not found or no changes made"}, 404
+    except Exception as e:
+        return {"error": str(e)}, 400
+
+@app.delete("/api/address-book/contacts/{contact_id}")
+async def delete_address_book_contact(contact_id: int):
+    """Delete an address book contact."""
+    success = db.delete_address_book_contact(contact_id)
+    if success:
+        return {"success": True}
+    else:
+        return {"error": "Contact not found"}, 404
+
+@app.get("/api/address-book/resolve/{name}")
+async def resolve_address_book_contact(name: str):
+    """Resolve a name to a contact (for testing voice resolution)."""
+    contact = db.resolve_address_book_contact(name)
+    if contact:
+        return contact
+    else:
+        return {"error": "Contact not found"}, 404
+
+@app.post("/api/address-book/migrate")
+async def migrate_contacts():
+    """Migrate contacts from existing contacts.json file."""
+    contacts_file = str(DATA / "contacts.json")
+    count = db.migrate_contacts_from_json(contacts_file)
+    return {"migrated_count": count, "success": True}
+
 
 @app.get("/api/actions")
 async def actions(status: str = None, limit: int = 50):

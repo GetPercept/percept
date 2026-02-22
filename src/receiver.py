@@ -101,12 +101,32 @@ def _load_contacts() -> dict:
 
 
 def _lookup_contact(name: str, field: str = "email") -> str | None:
-    """Look up contact by name or alias. Returns email/phone or None."""
+    """Look up contact by name or alias. Returns email/phone or None.
+    
+    First tries the new address book database, then falls back to JSON file.
+    """
+    # Try new address book database first
+    try:
+        contact = _db.resolve_address_book_contact(name)
+        if contact:
+            result = contact.get(field)
+            if result:
+                logger.info(f"Contact resolved from address book: {name} -> {field}={result}")
+                return result
+    except Exception as e:
+        logger.warning(f"Address book lookup failed: {e}")
+    
+    # Fall back to JSON file
     contacts = _load_contacts()
     name_lower = name.lower().strip()
     for cname, info in contacts.items():
         if cname == name_lower or name_lower in [a.lower() for a in info.get("aliases", [])]:
-            return info.get(field)
+            result = info.get(field)
+            if result:
+                logger.info(f"Contact resolved from JSON: {name} -> {field}={result}")
+                return result
+    
+    logger.info(f"Contact not found: {name}")
     return None
 
 

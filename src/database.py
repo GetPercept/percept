@@ -66,6 +66,19 @@ class PerceptDB:
                     mention_count INTEGER DEFAULT 0,
                     created_at REAL DEFAULT (strftime('%s', 'now'))
                 );
+                CREATE TABLE IF NOT EXISTS address_book_contacts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    first_name TEXT NOT NULL,
+                    last_name TEXT,
+                    alias TEXT,  -- nickname/shortname for voice matching
+                    category TEXT DEFAULT 'personal',  -- 'family', 'business', 'personal'
+                    phone TEXT,
+                    email TEXT,
+                    slack TEXT,  -- Slack handle or ID
+                    notes TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
                 CREATE TABLE IF NOT EXISTS actions (
                     id TEXT PRIMARY KEY,
                     timestamp REAL NOT NULL,
@@ -439,6 +452,206 @@ class PerceptDB:
         with self._lock:
             self._conn.execute("DELETE FROM contacts WHERE id = ?", (id,))
             self._conn.commit()
+
+    # --- Address Book Contacts ---
+
+    def save_address_book_contact(self, first_name: str, last_name: str = None, 
+                                 alias: str = None, category: str = "personal", 
+                                 phone: str = None, email: str = None, 
+                                 slack: str = None, notes: str = None) -> int:
+        """Save a new address book contact and return its ID."""
+        with self._lock:
+            cursor = self._conn.execute("""
+                INSERT INTO address_book_contacts 
+                (first_name, last_name, alias, category, phone, email, slack, notes, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """, (first_name, last_name, alias, category, phone, email, slack, notes))
+            contact_id = cursor.lastrowid
+            self._conn.commit()
+            return contact_id
+
+    def get_address_book_contact(self, contact_id: int) -> dict | None:
+        """Get a single address book contact by ID."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT * FROM address_book_contacts WHERE id = ?", 
+                (contact_id,)
+            ).fetchone()
+        return self._row_to_dict(row) if row else None
+
+    def get_all_address_book_contacts(self, category: str = None) -> list[dict]:
+        """Get all address book contacts, optionally filtered by category."""
+        with self._lock:
+            if category:
+                rows = self._conn.execute(
+                    "SELECT * FROM address_book_contacts WHERE category = ? ORDER BY first_name, last_name", 
+                    (category,)
+                ).fetchall()
+            else:
+                rows = self._conn.execute(
+                    "SELECT * FROM address_book_contacts ORDER BY first_name, last_name"
+                ).fetchall()
+        return [self._row_to_dict(r) for r in rows]
+
+    def search_address_book_contacts(self, query: str) -> list[dict]:
+        """Search contacts by name, alias, email, or phone."""
+        query_pattern = f"%{query.lower()}%"
+        with self._lock:
+            rows = self._conn.execute("""
+                SELECT * FROM address_book_contacts 
+                WHERE lower(first_name) LIKE ? 
+                   OR lower(last_name) LIKE ? 
+                   OR lower(alias) LIKE ? 
+                   OR lower(email) LIKE ? 
+                   OR lower(phone) LIKE ?
+                ORDER BY first_name, last_name
+            """, (query_pattern, query_pattern, query_pattern, query_pattern, query_pattern)).fetchall()
+        return [self._row_to_dict(r) for r in rows]
+
+    def update_address_book_contact(self, contact_id: int, **kwargs) -> bool:
+        """Update address book contact fields."""
+        if not kwargs:
+            return False
+        
+        # Build SET clause dynamically
+        valid_fields = {'first_name', 'last_name', 'alias', 'category', 'phone', 'email', 'slack', 'notes'}
+        updates = {k: v for k, v in kwargs.items() if k in valid_fields}
+        
+        if not updates:
+            return False
+        
+        set_clause = ', '.join(f"{k} = ?" for k in updates.keys())
+        values = list(updates.values())
+        values.append(contact_id)  # For WHERE clause
+        
+        with self._lock:
+            cursor = self._conn.execute(f"""
+                UPDATE address_book_contacts 
+                SET {set_clause}, updated_at = CURRENT_TIMESTAMP 
+                WHERE id = ?
+            """, values)
+            self._conn.commit()
+            return cursor.rowcount > 0
+
+    def delete_address_book_contact(self, contact_id: int) -> bool:
+        """Delete an address book contact."""
+        with self._lock:
+            cursor = self._conn.execute("DELETE FROM address_book_contacts WHERE id = ?", (contact_id,))
+            self._conn.commit()
+            return cursor.rowcount > 0
+
+    def resolve_address_book_contact(self, name: str) -> dict | None:
+        """Fuzzy match contact by first_name, last_name, or alias (case-insensitive).
+        
+        This is the KEY function for voice command resolution.
+        Returns best match or None.
+        """
+        name_lower = name.lower().strip()
+        
+        with self._lock:
+            # 1. Exact alias match (highest priority)
+            row = self._conn.execute("""
+                SELECT * FROM address_book_contacts 
+                WHERE lower(alias) = ? AND alias IS NOT NULL AND alias != ''
+            """, (name_lower,)).fetchone()
+            if row:
+                return self._row_to_dict(row)
+            
+            # 2. Exact first name match
+            row = self._conn.execute("""
+                SELECT * FROM address_book_contacts 
+                WHERE lower(first_name) = ?
+            """, (name_lower,)).fetchone()
+            if row:
+                return self._row_to_dict(row)
+            
+            # 3. Full name match (first + last)
+            name_parts = name_lower.split()
+            if len(name_parts) >= 2:
+                first_part = name_parts[0]
+                last_part = ' '.join(name_parts[1:])
+                row = self._conn.execute("""
+                    SELECT * FROM address_book_contacts 
+                    WHERE lower(first_name) = ? AND lower(last_name) = ?
+                """, (first_part, last_part)).fetchone()
+                if row:
+                    return self._row_to_dict(row)
+            
+            # 4. Partial match with confidence (starts with)
+            rows = self._conn.execute("""
+                SELECT * FROM address_book_contacts 
+                WHERE lower(first_name) LIKE ? OR lower(alias) LIKE ?
+                ORDER BY 
+                    CASE 
+                        WHEN lower(first_name) = ? THEN 1
+                        WHEN lower(alias) = ? THEN 2
+                        WHEN lower(first_name) LIKE ? THEN 3
+                        WHEN lower(alias) LIKE ? THEN 4
+                        ELSE 5
+                    END
+                LIMIT 1
+            """, (f"{name_lower}%", f"{name_lower}%", name_lower, name_lower, f"{name_lower}%", f"{name_lower}%")).fetchall()
+            
+            if rows:
+                return self._row_to_dict(rows[0])
+        
+        return None
+
+    def migrate_contacts_from_json(self, json_file_path: str) -> int:
+        """Migrate contacts from existing contacts.json to the new address book table.
+        
+        Returns the number of contacts migrated.
+        """
+        import json
+        from pathlib import Path
+        
+        json_path = Path(json_file_path)
+        if not json_path.exists():
+            logger.warning(f"Contacts JSON file not found: {json_file_path}")
+            return 0
+        
+        try:
+            with open(json_path, 'r') as f:
+                contacts_data = json.load(f)
+            
+            migrated_count = 0
+            
+            for name, info in contacts_data.items():
+                # Skip if already migrated (check by name)
+                existing = self.resolve_address_book_contact(name)
+                if existing:
+                    continue
+                
+                # Extract data from old format
+                email = info.get('email')
+                phone = info.get('phone')
+                aliases = info.get('aliases', [])
+                alias = aliases[0] if aliases else None
+                
+                # Use name as first_name, try to split if it contains spaces
+                name_parts = name.strip().split()
+                first_name = name_parts[0] if name_parts else name
+                last_name = ' '.join(name_parts[1:]) if len(name_parts) > 1 else None
+                
+                # Save to new table
+                self.save_address_book_contact(
+                    first_name=first_name,
+                    last_name=last_name,
+                    alias=alias,
+                    category='personal',  # Default category for migrated contacts
+                    phone=phone,
+                    email=email,
+                    notes=f"Migrated from contacts.json. Original aliases: {', '.join(aliases) if aliases else 'none'}"
+                )
+                
+                migrated_count += 1
+                logger.info(f"Migrated contact: {name} -> {first_name} {last_name or ''}")
+            
+            return migrated_count
+            
+        except Exception as e:
+            logger.error(f"Error migrating contacts from JSON: {e}")
+            return 0
 
     # --- Utterances ---
 
