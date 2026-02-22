@@ -90,7 +90,7 @@ Last updated: 2026-02-21
 - [ ] Blog/content section
 
 ### Open Source Launch
-- [x] Private GitHub repo (davidemanuelDEV/percept)
+- [x] Private GitHub repo (GetPercept/percept)
 - [x] MIT license
 - [x] Comprehensive documentation (9 doc files + README + CHANGELOG)
 - [x] Protocol specification with JSON Schemas

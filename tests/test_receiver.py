@@ -88,7 +88,7 @@ class TestContactLookup:
 
     def test_normalize_spoken_email(self):
         from src.receiver import _normalize_spoken_email
-        assert _normalize_spoken_email("david at vectorcare dot com") == "david@vectorcare.com"
+        assert _normalize_spoken_email("jane at example dot com") == "jane@example.com"
         assert _normalize_spoken_email("bob at gmail dot org") == "bob@gmail.org"
 
 

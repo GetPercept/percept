@@ -19,7 +19,7 @@ pip install getpercept
 ### Option B: From source
 
 ```bash
-git clone https://github.com/davidemanuelDEV/percept.git
+git clone https://github.com/GetPercept/percept.git
 cd percept
 pip install -r requirements.txt
 ```

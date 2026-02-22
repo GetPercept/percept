@@ -42,7 +42,7 @@ All notable changes to Percept are documented here, in reverse chronological ord
 - **Omi webhook integration** — `/webhook/transcript` endpoint receives real-time segments from Omi pendant via Cloudflare tunnel (`percept.clawdoor.com`)
 - **Intent parser** (`src/intent_parser.py`) — Two-tier hybrid: expanded regex patterns (7 action types with multiple trigger phrases each) + LLM fallback via OpenClaw. Cache layer (5min TTL) for LLM results
 - **Spoken number parsing** — Converts spoken numbers to integers: "thirty" → 30, "forty five" → 45, compound "twenty five" → 25. Duration parsing: "thirty minutes" → 1800s, "an hour and a half" → 5400s
-- **Action dispatcher** — 7 action types: email, text, reminder, search, calendar, note, order. Contact resolution, spoken email normalization ("david at vectorcare dot com" → david@vectorcare.com)
+- **Action dispatcher** — 7 action types: email, text, reminder, search, calendar, note, order. Contact resolution, spoken email normalization ("jane at example dot com" → jane@example.com)
 - **Wake word detection** — Checks flushed transcript for configurable wake words. Extracts command text after wake word
 - **Conversation tracking** — Two-tier accumulation: short-term buffer (3s silence → command flush) + long-term buffer (60s silence → auto-summary)
 - **Auto-summaries** — After 60s silence, sends full transcript to OpenClaw for AI-powered summary. Includes calendar context matching via `gog cal list`. Delivered via iMessage
@@ -65,7 +65,7 @@ All notable changes to Percept are documented here, in reverse chronological ord
 ### Infrastructure
 - **Cloudflare tunnel** — `percept.clawdoor.com` routed through clawdoor-api tunnel
 - **Domain** — getpercept.ai purchased and configured
-- **GitHub** — Private repo at `davidemanuelDEV/percept`
+- **GitHub** — Private repo at `GetPercept/percept`
 
 ---
 

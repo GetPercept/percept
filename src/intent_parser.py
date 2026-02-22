@@ -501,7 +501,7 @@ For params, include relevant fields:
             proc = await asyncio.create_subprocess_exec(
                 "/opt/homebrew/bin/openclaw", "agent", "--message",
                 f"INTENT_PARSE (respond with raw JSON only, no markdown): {prompt}",
-                "--to", "+14153414104", "--json",
+                "--to", "+1XXXXXXXXXX", "--json",  # TODO: load from config
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
                 env=env,
             )

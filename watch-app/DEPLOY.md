@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - **Xcode 16+** installed (currently using Xcode 26.2)
-- **Apple Developer Account** signed in to Xcode (david@caretech360.com, Individual)
+- **Apple Developer Account** signed in to Xcode (your Apple Developer account)
 - **iPhone** paired with your Apple Watch, connected to Mac via USB or WiFi
 - **Apple Watch** paired with the iPhone (watchOS 10.0+)
 - **Percept server** running and accessible at `https://percept.clawdoor.com`
@@ -31,7 +31,7 @@ open /Users/jarvis/.openclaw/workspace/percept/watch-app/PerceptWatch.xcodeproj
 2. Select the **PerceptWatch** target
 3. Go to **Signing & Capabilities**
 4. Check **"Automatically manage signing"**
-5. Select **Team**: "David Emanuel" (david@caretech360.com)
+5. Select **Team**: "your Apple Developer account"
 6. Repeat for the **PerceptCompanion** target
 7. Xcode will create provisioning profiles automatically
 

@@ -29,7 +29,7 @@ async def dispatch_to_openclaw(message: str, timeout: int = 30) -> tuple[bool, s
     try:
         env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/openclaw", "agent", "--message", message, "--to", "+14153414104",
+            "/opt/homebrew/bin/openclaw", "agent", "--message", message, "--to", "+1XXXXXXXXXX",  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
@@ -53,7 +53,7 @@ async def send_imessage(text: str):
     try:
         env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/imsg", "send", "--to", "+14153414104", "--text", text,
+            "/opt/homebrew/bin/imsg", "send", "--to", "+1XXXXXXXXXX", "--text", text,  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )

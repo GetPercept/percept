@@ -46,7 +46,7 @@ Percept forwards to OpenClaw by default. The relevant code in `src/receiver.py`:
 
 ```python
 proc = await asyncio.create_subprocess_exec(
-    "/opt/homebrew/bin/openclaw", "agent", "--message", msg, "--to", "+14153414104",
+    "/opt/homebrew/bin/openclaw", "agent", "--message", msg, "--to", "+1XXXXXXXXXX",
     stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
     env=env,
 )

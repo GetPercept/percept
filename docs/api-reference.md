@@ -248,7 +248,7 @@ Contact registry.
 
 ```json
 {
-  "david": {"email": "david@vectorcare.com", "phone": "+14153414104", "aliases": ["dave"]}
+  "john": {"email": "user@example.com", "phone": "+1XXXXXXXXXX", "aliases": ["johnny"]}
 }
 ```
 

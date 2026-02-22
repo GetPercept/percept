@@ -60,7 +60,7 @@ async def _send_imessage(text: str):
     try:
         env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/imsg", "send", "--to", "+14153414104", "--text", text,
+            "/opt/homebrew/bin/imsg", "send", "--to", "+1XXXXXXXXXX", "--text", text,  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
@@ -96,7 +96,7 @@ def _lookup_contact(name: str, field: str = "email") -> str | None:
 
 
 def _normalize_spoken_email(text: str) -> str:
-    """Convert spoken email: 'david at vectorcare dot com' → 'david@vectorcare.com'"""
+    """Convert spoken email: 'jane at example dot com' → 'jane@example.com'"""
     t = text.lower().strip()
     t = re.sub(r'\s+dot\s+com\b', '.com', t)
     t = re.sub(r'\s+dot\s+org\b', '.org', t)
@@ -509,7 +509,7 @@ async def _flush_transcript(session_key: str):
                     logger.error(f"Failed to save action to DB: {e}")
             env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
             proc = await asyncio.create_subprocess_exec(
-                "/opt/homebrew/bin/openclaw", "agent", "--message", msg, "--to", "+14153414104",
+                "/opt/homebrew/bin/openclaw", "agent", "--message", msg, "--to", "+1XXXXXXXXXX",  # TODO: load from config
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
                 env=env,
             )
@@ -617,7 +617,7 @@ TRANSCRIPT:
         env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
         # First get the LLM summary (without delivering)
         proc_summary = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/openclaw", "agent", "--message", summary_prompt, "--to", "+14153414104", "--json",
+            "/opt/homebrew/bin/openclaw", "agent", "--message", summary_prompt, "--to", "+1XXXXXXXXXX", "--json",  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
@@ -828,7 +828,7 @@ Question: {text}"""
     try:
         env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/openclaw", "agent", "--message", prompt, "--to", "+14153414104",
+            "/opt/homebrew/bin/openclaw", "agent", "--message", prompt, "--to", "+1XXXXXXXXXX",  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )

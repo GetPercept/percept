@@ -221,8 +221,8 @@ Legacy file `data/contacts.json`:
 ```json
 {
   "david": {
-    "email": "david@vectorcare.com",
-    "phone": "+14153414104",
+    "email": "user@example.com",
+    "phone": "+1XXXXXXXXXX",
     "aliases": ["dave"]
   },
   "sarah": {
