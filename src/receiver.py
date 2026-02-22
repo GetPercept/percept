@@ -2,6 +2,7 @@
 
 import json
 import os
+import shutil
 import time
 import asyncio
 import subprocess
@@ -28,6 +29,15 @@ from src.action_dispatcher import dispatch_to_openclaw, send_imessage, save_acti
 from src.summary_manager import build_transcript_with_names, get_calendar_context, build_day_summary
 
 logger = logging.getLogger(__name__)
+
+# Binary path resolution with fallback
+def _get_binary_path(name: str) -> str:
+    """Get binary path dynamically with fallback."""
+    path = shutil.which(name)
+    if not path:
+        logger.warning(f"Binary '{name}' not found in PATH, action will be skipped")
+        return None
+    return path
 
 # Initialize database
 _db = PerceptDB()
@@ -58,9 +68,14 @@ _context_engine = ContextEngine(db=_db)
 async def _send_imessage(text: str):
     """Send iMessage directly via imsg CLI — doesn't pollute the main session."""
     try:
-        env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
+        imsg_path = _get_binary_path("imsg")
+        if not imsg_path:
+            print(f"[IMSG] imsg binary not found, skipping message", flush=True)
+            return
+            
+        env = os.environ.copy()  # Inherit system PATH
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/imsg", "send", "--to", "+1XXXXXXXXXX", "--text", text,  # TODO: load from config
+            imsg_path, "send", "--to", "+1XXXXXXXXXX", "--text", text,  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
@@ -265,10 +280,13 @@ BYTES_PER_SECOND = SAMPLE_RATE * CONFIG["audio"]["sample_width"]  # 32000 bytes/
 # --- Transcript accumulation for OpenClaw forwarding ---
 SILENCE_TIMEOUT = 5  # seconds of silence before flushing to OpenClaw
 CONVERSATION_END_TIMEOUT = 60  # seconds of silence = conversation over, trigger summary
-CONVERSATIONS_DIR = Path("/Users/jarvis/.openclaw/workspace/percept/data/conversations")
+
+# Use relative paths from project root
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+CONVERSATIONS_DIR = PROJECT_ROOT / "data" / "conversations"
 CONVERSATIONS_DIR.mkdir(parents=True, exist_ok=True)
 LIVE_FILE = Path("/tmp/percept-live.txt")
-SUMMARY_LOG = Path("/Users/jarvis/.openclaw/workspace/percept/data/summaries")
+SUMMARY_LOG = PROJECT_ROOT / "data" / "summaries"
 SUMMARY_LOG.mkdir(parents=True, exist_ok=True)
 
 # Per-session accumulation state (short-term, 5s flush)
@@ -507,9 +525,16 @@ async def _flush_transcript(session_key: str):
                     )
                 except Exception as e:
                     logger.error(f"Failed to save action to DB: {e}")
-            env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
+            openclaw_path = _get_binary_path("openclaw")
+            if not openclaw_path:
+                print(f"[OPENCLAW] openclaw binary not found, skipping command", flush=True)
+                if _action_id:
+                    _db.update_action_status(_action_id, "failed", "openclaw binary not found")
+                return
+                
+            env = os.environ.copy()  # Inherit system PATH
             proc = await asyncio.create_subprocess_exec(
-                "/opt/homebrew/bin/openclaw", "agent", "--message", msg, "--to", "+1XXXXXXXXXX",  # TODO: load from config
+                openclaw_path, "agent", "--message", msg, "--to", "+1XXXXXXXXXX",  # TODO: load from config
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
                 env=env,
             )
@@ -614,10 +639,15 @@ TRANSCRIPT:
 {full_transcript[-3000:]}"""
     
     try:
-        env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
+        openclaw_path = _get_binary_path("openclaw")
+        if not openclaw_path:
+            print(f"[SUMMARY] openclaw binary not found, skipping LLM summary", flush=True)
+            return
+            
+        env = os.environ.copy()  # Inherit system PATH
         # First get the LLM summary (without delivering)
         proc_summary = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/openclaw", "agent", "--message", summary_prompt, "--to", "+1XXXXXXXXXX", "--json",  # TODO: load from config
+            openclaw_path, "agent", "--message", summary_prompt, "--to", "+1XXXXXXXXXX", "--json",  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
@@ -653,7 +683,7 @@ TRANSCRIPT:
                     pass
         # Then deliver via iMessage
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/openclaw", "agent", "--message", summary_prompt, "--channel", "imessage", "--deliver",
+            openclaw_path, "agent", "--message", summary_prompt, "--channel", "imessage", "--deliver",
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
@@ -704,9 +734,14 @@ TRANSCRIPT:
 {full_transcript[-3000:]}"""
 
     try:
-        env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
+        openclaw_path = _get_binary_path("openclaw")
+        if not openclaw_path:
+            print(f"[ON-DEMAND SUMMARY] openclaw binary not found, skipping", flush=True)
+            return
+            
+        env = os.environ.copy()  # Inherit system PATH
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/openclaw", "agent", "--message", summary_prompt, "--channel", "imessage", "--deliver",
+            openclaw_path, "agent", "--message", summary_prompt, "--channel", "imessage", "--deliver",
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
@@ -719,10 +754,15 @@ TRANSCRIPT:
 async def _get_calendar_context(start_time: float = None) -> str:
     """Try to match conversation against today's calendar events."""
     try:
+        gog_path = _get_binary_path("gog")
+        if not gog_path:
+            return ""
+            
+        env = os.environ.copy()  # Inherit system PATH
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/gog", "cal", "list", "--from", "today", "--to", "today",
+            gog_path, "cal", "list", "--from", "today", "--to", "today",
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-            env={**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"},
+            env=env,
         )
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=10)
         if proc.returncode != 0:
@@ -826,9 +866,14 @@ Context: {recent[-500:]}
 Question: {text}"""
     
     try:
-        env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
+        openclaw_path = _get_binary_path("openclaw")
+        if not openclaw_path:
+            print(f"[AMBIENT] openclaw binary not found, skipping", flush=True)
+            return
+            
+        env = os.environ.copy()  # Inherit system PATH
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/openclaw", "agent", "--message", prompt, "--to", "+1XXXXXXXXXX",  # TODO: load from config
+            openclaw_path, "agent", "--message", prompt, "--to", "+1XXXXXXXXXX",  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )

@@ -2,6 +2,7 @@
 
 import json
 import re
+import shutil
 import time
 import asyncio
 import logging
@@ -10,6 +11,15 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+# Binary path resolution with fallback
+def _get_binary_path(name: str) -> str:
+    """Get binary path dynamically with fallback."""
+    path = shutil.which(name)
+    if not path:
+        logger.warning(f"Binary '{name}' not found in PATH, action will be skipped")
+        return None
+    return path
 
 # ---------------------------------------------------------------------------
 # Spoken number / time parser
@@ -497,9 +507,14 @@ For params, include relevant fields:
 - note: content"""
 
         try:
-            env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
+            openclaw_path = _get_binary_path("openclaw")
+            if not openclaw_path:
+                logger.warning("[INTENT] openclaw binary not found, skipping LLM fallback")
+                return None
+                
+            env = os.environ.copy()  # Inherit system PATH
             proc = await asyncio.create_subprocess_exec(
-                "/opt/homebrew/bin/openclaw", "agent", "--message",
+                openclaw_path, "agent", "--message",
                 f"INTENT_PARSE (respond with raw JSON only, no markdown): {prompt}",
                 "--to", "+1XXXXXXXXXX", "--json",  # TODO: load from config
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,

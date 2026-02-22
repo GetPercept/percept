@@ -9,11 +9,21 @@ import json
 import logging
 import os
 import re
+import shutil
 from typing import Optional
 
 from src.database import PerceptDB
 
 logger = logging.getLogger(__name__)
+
+# Binary path resolution with fallback
+def _get_binary_path(name: str) -> str:
+    """Get binary path dynamically with fallback."""
+    path = shutil.which(name)
+    if not path:
+        logger.warning(f"Binary '{name}' not found in PATH, action will be skipped")
+        return None
+    return path
 
 
 async def dispatch_to_openclaw(message: str, timeout: int = 30) -> tuple[bool, str]:
@@ -27,9 +37,13 @@ async def dispatch_to_openclaw(message: str, timeout: int = 30) -> tuple[bool, s
         Tuple of (success: bool, output: str).
     """
     try:
-        env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
+        openclaw_path = _get_binary_path("openclaw")
+        if not openclaw_path:
+            return False, "openclaw binary not found"
+            
+        env = os.environ.copy()  # Inherit system PATH
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/openclaw", "agent", "--message", message, "--to", "+1XXXXXXXXXX",  # TODO: load from config
+            openclaw_path, "agent", "--message", message, "--to", "+1XXXXXXXXXX",  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
@@ -51,9 +65,14 @@ async def send_imessage(text: str):
         text: Message text to send.
     """
     try:
-        env = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"}
+        imsg_path = _get_binary_path("imsg")
+        if not imsg_path:
+            logger.warning("imsg binary not found, skipping message")
+            return
+            
+        env = os.environ.copy()  # Inherit system PATH
         proc = await asyncio.create_subprocess_exec(
-            "/opt/homebrew/bin/imsg", "send", "--to", "+1XXXXXXXXXX", "--text", text,  # TODO: load from config
+            imsg_path, "send", "--to", "+1XXXXXXXXXX", "--text", text,  # TODO: load from config
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
