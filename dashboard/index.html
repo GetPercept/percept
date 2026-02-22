@@ -79,8 +79,40 @@ a{color:var(--accent);text-decoration:none}
 .summary-raw.open{display:block}
 /* Refresh indicator */
 .refresh-indicator{margin-left:auto;font-size:11px;color:var(--muted)}
+/* Address Book */
+.filter-tab{padding:6px 12px;background:transparent;color:var(--muted);border:none;border-radius:6px;cursor:pointer;font-size:13px;transition:.15s}
+.filter-tab.active,.filter-tab:hover{background:rgba(249,115,22,.1);color:var(--accent)}
+.contact-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 120px;gap:12px;padding:12px;border-bottom:1px solid var(--border);align-items:center;font-size:13px;transition:.15s}
+.contact-row:hover{background:rgba(255,255,255,.02)}
+.contact-name{font-weight:600;color:var(--text)}
+.contact-alias{color:var(--muted);font-style:italic}
+.contact-category{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
+.contact-category.family{background:rgba(34,197,94,.15);color:#22c55e}
+.contact-category.business{background:rgba(59,130,246,.15);color:#3b82f6}
+.contact-category.personal{background:rgba(107,114,128,.15);color:#6b7280}
+.contact-actions{display:flex;gap:4px}
+.contact-actions button{padding:4px 8px;background:transparent;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:11px;color:var(--muted);transition:.15s}
+.contact-actions button:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.contact-actions .delete:hover{border-color:var(--red);color:var(--red)}
+/* Modal */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal.show{display:flex}
+.modal-content{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;width:500px;max-width:90vw;max-height:90vh;overflow-y:auto}
+.modal h3{color:var(--accent);margin-bottom:16px;font-size:18px}
+.modal .form-group{margin-bottom:16px}
+.modal label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;font-weight:600}
+.modal input,.modal select,.modal textarea{width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;outline:none;transition:.15s}
+.modal input:focus,.modal select:focus,.modal textarea:focus{border-color:var(--accent)}
+.modal textarea{resize:vertical;min-height:80px}
+.modal .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal .buttons{display:flex;gap:12px;justify-content:flex-end;margin-top:24px}
+.modal button{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;transition:.15s}
+.modal .btn-primary{background:var(--accent);color:#fff}
+.modal .btn-primary:hover{background:#e86009}
+.modal .btn-secondary{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.modal .btn-secondary:hover{background:rgba(255,255,255,.05);color:var(--text)}
 /* Responsive */
-@media(max-width:768px){.sidebar{width:60px}.sidebar .logo span,.sidebar nav a span{display:none}.sidebar nav a{justify-content:center;padding:12px}}
+@media(max-width:768px){.sidebar{width:60px}.sidebar .logo span,.sidebar nav a span{display:none}.sidebar nav a{justify-content:center;padding:12px}.contact-row{grid-template-columns:1fr 80px;font-size:12px}.contact-row .contact-alias,.contact-row .contact-category,.contact-row > div:nth-child(4),.contact-row > div:nth-child(5),.contact-row > div:nth-child(6){display:none}}
 </style>
 </head>
 <body>
@@ -92,6 +124,7 @@ a{color:var(--accent);text-decoration:none}
     <a href="#" data-section="summaries">📋 <span>Summaries</span></a>
     <a href="#" data-section="actions">⚡ <span>Actions</span></a>
     <a href="#" data-section="analytics">📊 <span>Analytics</span></a>
+    <a href="#" data-section="address-book">📇 <span>Address Book</span></a>
     <a href="#" data-section="live">🎤 <span>Live Feed</span></a>
     <a href="#" data-section="settings">⚙️ <span>Settings</span></a>
   </nav>
@@ -133,6 +166,43 @@ a{color:var(--accent);text-decoration:none}
       <div class="card-grid" id="analytics-stats"></div>
       <div class="card"><h3>Words per Speaker</h3><div class="bar-chart" id="speaker-chart"></div></div>
       <div class="card"><h3>Segments per Hour (Today)</h3><div class="bar-chart" id="segments-chart"></div></div>
+    </div>
+    <!-- Address Book -->
+    <div class="section" id="sec-address-book">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 style="margin:0">Address Book</h2>
+        <div style="display:flex;gap:8px">
+          <button onclick="migrateContacts()" style="padding:6px 12px;background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:6px;cursor:pointer;font-size:12px">Migrate from JSON</button>
+          <button onclick="showAddContactModal()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">+ Add Contact</button>
+        </div>
+      </div>
+      
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px">
+        <button class="filter-tab active" data-category="">All</button>
+        <button class="filter-tab" data-category="family">Family</button>
+        <button class="filter-tab" data-category="business">Business</button>
+        <button class="filter-tab" data-category="personal">Personal</button>
+      </div>
+      
+      <!-- Search -->
+      <input class="search" id="address-book-search" placeholder="Search contacts..." oninput="filterAddressBookContacts()" style="margin-bottom:16px">
+      
+      <!-- Contacts table -->
+      <div class="card">
+        <div id="address-book-table">
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 120px;gap:12px;padding:12px;border-bottom:1px solid var(--border);font-weight:600;font-size:12px;color:var(--accent);text-transform:uppercase">
+            <div>Name</div>
+            <div>Alias</div>
+            <div>Category</div>
+            <div>Phone</div>
+            <div>Email</div>
+            <div>Slack</div>
+            <div>Actions</div>
+          </div>
+          <div id="address-book-contacts"></div>
+        </div>
+      </div>
     </div>
     <!-- Live -->
     <div class="section" id="sec-live">
@@ -794,6 +864,279 @@ function renderConnectionInfo() {
 
 // Load settings when navigating to settings tab
 document.querySelector('[data-section="settings"]').addEventListener('click', () => loadSettings());
+
+// --- Address Book Functions ---
+let addressBookContacts = [];
+let currentFilter = '';
+
+// Load address book when navigating to address book tab
+document.querySelector('[data-section="address-book"]').addEventListener('click', () => loadAddressBook());
+
+async function loadAddressBook() {
+  try {
+    const response = await fetch(`${API}/api/address-book/contacts${currentFilter ? '?category=' + currentFilter : ''}`);
+    addressBookContacts = await response.json();
+    renderAddressBookContacts();
+  } catch (error) {
+    console.error('Failed to load address book:', error);
+  }
+}
+
+function renderAddressBookContacts() {
+  const container = document.getElementById('address-book-contacts');
+  const searchQuery = document.getElementById('address-book-search').value.toLowerCase();
+  
+  let filteredContacts = addressBookContacts;
+  
+  // Apply search filter
+  if (searchQuery) {
+    filteredContacts = addressBookContacts.filter(contact => 
+      (contact.first_name || '').toLowerCase().includes(searchQuery) ||
+      (contact.last_name || '').toLowerCase().includes(searchQuery) ||
+      (contact.alias || '').toLowerCase().includes(searchQuery) ||
+      (contact.email || '').toLowerCase().includes(searchQuery) ||
+      (contact.phone || '').toLowerCase().includes(searchQuery)
+    );
+  }
+  
+  if (filteredContacts.length === 0) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">No contacts found</div>';
+    return;
+  }
+  
+  container.innerHTML = filteredContacts.map(contact => `
+    <div class="contact-row">
+      <div>
+        <div class="contact-name">${esc(contact.first_name)} ${esc(contact.last_name || '')}</div>
+        ${contact.alias ? `<div class="contact-alias">${esc(contact.alias)}</div>` : ''}
+      </div>
+      <div class="contact-alias">${esc(contact.alias || '')}</div>
+      <div><span class="contact-category ${contact.category}">${esc(contact.category || 'personal')}</span></div>
+      <div>${esc(contact.phone || '')}</div>
+      <div>${esc(contact.email || '')}</div>
+      <div>${esc(contact.slack || '')}</div>
+      <div class="contact-actions">
+        <button onclick="editContact(${contact.id})">Edit</button>
+        <button class="delete" onclick="deleteContact(${contact.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterAddressBookContacts() {
+  renderAddressBookContacts();
+}
+
+// Filter tabs
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFilter = tab.dataset.category;
+    loadAddressBook();
+  });
+});
+
+function showAddContactModal() {
+  showContactModal();
+}
+
+function editContact(contactId) {
+  const contact = addressBookContacts.find(c => c.id === contactId);
+  if (contact) {
+    showContactModal(contact);
+  }
+}
+
+function showContactModal(contact = null) {
+  const isEdit = !!contact;
+  const modalHtml = `
+    <div class="modal show" id="contact-modal">
+      <div class="modal-content">
+        <h3>${isEdit ? 'Edit Contact' : 'Add New Contact'}</h3>
+        <form id="contact-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name *</label>
+              <input type="text" id="contact-first-name" value="${esc(contact?.first_name || '')}" required>
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="contact-last-name" value="${esc(contact?.last_name || '')}">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Alias/Nickname</label>
+              <input type="text" id="contact-alias" value="${esc(contact?.alias || '')}" placeholder="e.g., Mom, Boss">
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select id="contact-category">
+                <option value="personal" ${!contact || contact.category === 'personal' ? 'selected' : ''}>Personal</option>
+                <option value="family" ${contact?.category === 'family' ? 'selected' : ''}>Family</option>
+                <option value="business" ${contact?.category === 'business' ? 'selected' : ''}>Business</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" id="contact-phone" value="${esc(contact?.phone || '')}" placeholder="+1 (555) 123-4567">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="contact-email" value="${esc(contact?.email || '')}" placeholder="contact@example.com">
+          </div>
+          <div class="form-group">
+            <label>Slack Handle</label>
+            <input type="text" id="contact-slack" value="${esc(contact?.slack || '')}" placeholder="@username">
+          </div>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="contact-notes" placeholder="Additional notes...">${esc(contact?.notes || '')}</textarea>
+          </div>
+          <div class="buttons">
+            <button type="button" class="btn-secondary" onclick="closeContactModal()">Cancel</button>
+            <button type="submit" class="btn-primary">${isEdit ? 'Update' : 'Create'} Contact</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  
+  document.getElementById('contact-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await saveContact(contact?.id);
+  });
+}
+
+function closeContactModal() {
+  const modal = document.getElementById('contact-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+async function saveContact(contactId = null) {
+  const formData = {
+    first_name: document.getElementById('contact-first-name').value.trim(),
+    last_name: document.getElementById('contact-last-name').value.trim() || null,
+    alias: document.getElementById('contact-alias').value.trim() || null,
+    category: document.getElementById('contact-category').value,
+    phone: document.getElementById('contact-phone').value.trim() || null,
+    email: document.getElementById('contact-email').value.trim() || null,
+    slack: document.getElementById('contact-slack').value.trim() || null,
+    notes: document.getElementById('contact-notes').value.trim() || null
+  };
+  
+  if (!formData.first_name) {
+    alert('First name is required');
+    return;
+  }
+  
+  try {
+    const url = contactId ? 
+      `${API}/api/address-book/contacts/${contactId}` : 
+      `${API}/api/address-book/contacts`;
+    const method = contactId ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      closeContactModal();
+      loadAddressBook();
+      showToast(`Contact ${contactId ? 'updated' : 'created'} successfully`);
+    } else {
+      alert('Error: ' + (result.error || 'Failed to save contact'));
+    }
+  } catch (error) {
+    console.error('Failed to save contact:', error);
+    alert('Failed to save contact');
+  }
+}
+
+async function deleteContact(contactId) {
+  const contact = addressBookContacts.find(c => c.id === contactId);
+  if (!contact || !confirm(`Delete contact "${contact.first_name} ${contact.last_name || ''}"?`)) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API}/api/address-book/contacts/${contactId}`, {
+      method: 'DELETE'
+    });
+    
+    if (response.ok) {
+      loadAddressBook();
+      showToast('Contact deleted successfully');
+    } else {
+      const result = await response.json();
+      alert('Error: ' + (result.error || 'Failed to delete contact'));
+    }
+  } catch (error) {
+    console.error('Failed to delete contact:', error);
+    alert('Failed to delete contact');
+  }
+}
+
+async function migrateContacts() {
+  if (!confirm('This will import contacts from the existing contacts.json file. Continue?')) {
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API}/api/address-book/migrate`, {
+      method: 'POST'
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      loadAddressBook();
+      showToast(`Migrated ${result.migrated_count} contacts successfully`);
+    } else {
+      alert('Error: ' + (result.error || 'Failed to migrate contacts'));
+    }
+  } catch (error) {
+    console.error('Failed to migrate contacts:', error);
+    alert('Failed to migrate contacts');
+  }
+}
+
+function showToast(message) {
+  // Simple toast notification
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--accent);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    z-index: 10000;
+    transition: all 0.3s ease;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
 
 // Init + auto-refresh
 fetchAll();
