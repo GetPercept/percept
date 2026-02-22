@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Percept Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0a;--card:#141414;--border:#262626;--accent:#f97316;--text:#e5e5e5;--muted:#737373;--green:#22c55e;--red:#ef4444;--yellow:#eab308}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden}
+a{color:var(--accent);text-decoration:none}
+/* Sidebar */
+.sidebar{width:220px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar .logo{padding:20px;font-size:18px;font-weight:700;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.sidebar .logo span{color:var(--accent)}
+.sidebar nav{flex:1;padding:12px 0}
+.sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--muted);font-size:14px;transition:.15s}
+.sidebar nav a:hover,.sidebar nav a.active{color:var(--text);background:rgba(249,115,22,.08)}
+.sidebar nav a.active{border-right:2px solid var(--accent)}
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+/* Top bar */
+.topbar{padding:12px 24px;border-bottom:1px solid var(--border);display:flex;gap:24px;align-items:center;flex-wrap:wrap;font-size:13px;background:var(--card)}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.status-dot.on{background:var(--green)}
+.status-dot.off{background:var(--red)}
+.topbar .item{display:flex;align-items:center;gap:6px}
+.topbar .label{color:var(--muted)}
+/* Content */
+.content{flex:1;overflow-y:auto;padding:24px}
+.section{display:none}
+.section.active{display:block}
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h3{font-size:14px;color:var(--accent);margin-bottom:10px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.stat-card .value{font-size:28px;font-weight:700;color:var(--accent)}
+.stat-card .label{font-size:12px;color:var(--muted);margin-top:4px}
+/* Events */
+.event-item{padding:12px;border-bottom:1px solid var(--border);cursor:pointer;transition:.15s}
+.event-item:hover{background:rgba(255,255,255,.03)}
+.event-item .time{font-size:11px;color:var(--muted)}
+.event-item .type{font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(249,115,22,.15);color:var(--accent);margin-left:8px}
+.event-item .preview{font-size:13px;margin-top:4px;color:var(--text);opacity:.85}
+.event-item .details{display:none;margin-top:10px;font-size:13px;color:var(--text);opacity:.9;white-space:pre-wrap;max-height:400px;overflow-y:auto}
+.event-item.expanded .details{display:block}
+/* Transcript */
+.transcript-line{font-size:13px;padding:4px 0;line-height:1.5;color:var(--text)}
+.transcript-line .speaker{color:var(--accent);font-weight:600;margin-right:6px}
+.transcript-line .ts{color:var(--muted);font-size:11px;margin-right:6px}
+/* Tags */
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:rgba(249,115,22,.1);color:var(--accent);margin:2px}
+/* Search */
+.search{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;margin-bottom:16px;outline:none}
+.search:focus{border-color:var(--accent)}
+/* Bar chart */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px;padding:10px 0}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1}
+.bar{background:var(--accent);border-radius:4px 4px 0 0;width:100%;min-width:20px;transition:.3s}
+.bar-label{font-size:10px;color:var(--muted);margin-top:4px}
+/* Actions */
+.action-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text)}
+.action-item .status-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.action-item .action-body{flex:1}
+.action-item .action-type{font-weight:600;color:var(--text);text-transform:capitalize}
+.action-item .action-desc{color:var(--text);opacity:.9;margin-top:2px}
+.action-item .action-meta{font-size:11px;color:var(--muted);margin-top:4px}
+.actions-section-title{font-size:15px;font-weight:600;color:var(--text);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.actions-section-title:first-child{margin-top:0}
+/* Summary */
+.summary-text{color:var(--text);opacity:.9;font-size:14px;line-height:1.7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;white-space:normal;word-wrap:break-word}
+.summary-text p{margin:0 0 8px}
+.summary-text ul,.summary-text ol{margin:4px 0 8px 20px}
+.summary-text li{margin:2px 0}
+.summary-toggle{font-size:12px;color:var(--accent);cursor:pointer;margin-top:10px;display:inline-block}
+.summary-toggle:hover{text-decoration:underline}
+.summary-raw{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.summary-raw.open{display:block}
+/* Refresh indicator */
+.refresh-indicator{margin-left:auto;font-size:11px;color:var(--muted)}
+/* Responsive */
+@media(max-width:768px){.sidebar{width:60px}.sidebar .logo span,.sidebar nav a span{display:none}.sidebar nav a{justify-content:center;padding:12px}}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo">🔊 <span>Percept</span></div>
+  <nav>
+    <a href="#" data-section="events" class="active">📡 <span>Events Feed</span></a>
+    <a href="#" data-section="transcripts">📝 <span>Transcripts</span></a>
+    <a href="#" data-section="summaries">📋 <span>Summaries</span></a>
+    <a href="#" data-section="actions">⚡ <span>Actions</span></a>
+    <a href="#" data-section="analytics">📊 <span>Analytics</span></a>
+    <a href="#" data-section="live">🎤 <span>Live Feed</span></a>
+    <a href="#" data-section="settings">⚙️ <span>Settings</span></a>
+  </nav>
+</div>
+<div class="main">
+  <div class="topbar" id="topbar">
+    <div class="item"><span class="status-dot off" id="omi-dot"></span><span class="label">Omi Device</span><span id="omi-status">Checking...</span></div>
+    <div class="item"><span class="label">Session:</span><span id="session-id">—</span></div>
+    <div class="item"><span class="label">Uptime:</span><span id="uptime">—</span></div>
+    <div class="item"><span class="label">Conversations:</span><span id="conv-count">0</span></div>
+    <div class="refresh-indicator" id="refresh-info">Auto-refresh: 30s</div>
+  </div>
+  <div class="content">
+    <!-- Events Feed -->
+    <div class="section active" id="sec-events">
+      <h2 style="margin-bottom:16px">Events Feed</h2>
+      <div id="events-list"></div>
+    </div>
+    <!-- Transcripts -->
+    <div class="section" id="sec-transcripts">
+      <h2 style="margin-bottom:16px">Transcripts Library</h2>
+      <input class="search" id="transcript-search" placeholder="Search transcripts...">
+      <div id="transcripts-list"></div>
+    </div>
+    <!-- Summaries -->
+    <div class="section" id="sec-summaries">
+      <h2 style="margin-bottom:16px">Conversation Summaries</h2>
+      <div id="summaries-list"></div>
+    </div>
+    <!-- Actions -->
+    <div class="section" id="sec-actions">
+      <h2 style="margin-bottom:16px">Actions</h2>
+      <input class="search" id="action-search" placeholder="Search actions..." oninput="renderActions()">
+      <div id="actions-list"></div>
+    </div>
+    <!-- Analytics -->
+    <div class="section" id="sec-analytics">
+      <h2 style="margin-bottom:16px">Speech Analytics</h2>
+      <div class="card-grid" id="analytics-stats"></div>
+      <div class="card"><h3>Words per Speaker</h3><div class="bar-chart" id="speaker-chart"></div></div>
+      <div class="card"><h3>Segments per Hour (Today)</h3><div class="bar-chart" id="segments-chart"></div></div>
+    </div>
+    <!-- Live -->
+    <div class="section" id="sec-live">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2 style="margin:0">Live Captioning</h2>
+        <span id="live-status" style="font-size:12px;color:var(--muted)">⏸ Waiting for audio...</span>
+      </div>
+      <h2 style="margin-bottom:16px">Live Transcript</h2>
+      <div class="card" id="live-feed" style="max-height:70vh;overflow-y:auto;font-size:13px;white-space:pre-wrap;font-family:monospace;color:var(--text)"></div>
+    </div>
+    <!-- Settings -->
+    <div class="section" id="sec-settings">
+      <h2 style="margin-bottom:16px">Settings</h2>
+
+      <!-- Wake Words -->
+      <div class="card">
+        <h3>Wake Words</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Commands are only triggered when a wake word is detected</p>
+        <div id="wake-words-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+        <div style="display:flex;gap:8px">
+          <input class="search" id="new-wake-word" placeholder="Add wake word..." style="margin-bottom:0;flex:1">
+          <button onclick="addWakeWord()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">Add</button>
+        </div>
+      </div>
+
+      <!-- Speaker Names -->
+      <div class="card">
+        <h3>Speaker Names</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">These help Percept know who's talking and resolve references like "the client"</p>
+        <div id="speakers-table"></div>
+      </div>
+
+      <!-- Contacts -->
+      <div class="card">
+        <h3>Contacts</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Used for voice command resolution ("email Sarah" → looks up Sarah's email)</p>
+        <div id="contacts-table"></div>
+        <button onclick="addContactRow()" style="margin-top:10px;padding:8px 16px;background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:8px;cursor:pointer;font-size:13px">+ Add Contact</button>
+      </div>
+
+      <!-- Transcriber -->
+      <div class="card">
+        <h3>Transcriber</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Omi handles transcription on-device. Other options process audio locally or via API</p>
+        <div id="transcriber-options" style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="radio" name="transcriber" value="omi"> <span><strong>Omi</strong> — On-device transcription (default)</span></label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="radio" name="transcriber" value="faster-whisper"> <span><strong>faster-whisper</strong> — Local GPU-accelerated Whisper</span></label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="radio" name="transcriber" value="nvidia-riva"> <span><strong>NVIDIA Riva</strong> — NVIDIA's streaming ASR</span></label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="radio" name="transcriber" value="deepgram"> <span><strong>Deepgram</strong> — Cloud API transcription</span></label>
+        </div>
+      </div>
+
+      <!-- Intent Parsing -->
+      <div class="card">
+        <h3>Intent Parsing</h3>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="intent-llm-toggle">
+            <span>LLM Fallback</span>
+          </label>
+          <span style="font-size:12px;color:var(--muted)">Use AI to parse commands that don't match patterns</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:13px;color:var(--muted)">Model:</label>
+          <input class="search" id="intent-model" placeholder="default" style="margin-bottom:0;max-width:300px">
+        </div>
+      </div>
+
+      <!-- Privacy & Data -->
+      <div class="card">
+        <h3>Privacy & Data</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+          <div><label style="font-size:12px;color:var(--muted)">Utterance retention (days)</label><input class="search" id="ttl-utterances" type="number" style="margin-bottom:0"></div>
+          <div><label style="font-size:12px;color:var(--muted)">Summary retention (days)</label><input class="search" id="ttl-summaries" type="number" style="margin-bottom:0"></div>
+          <div><label style="font-size:12px;color:var(--muted)">Relationship retention (days)</label><input class="search" id="ttl-relationships" type="number" style="margin-bottom:0"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:16px">
+          <button onclick="purgeNow()" style="padding:8px 16px;background:var(--red);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px">Purge Expired Data</button>
+          <button onclick="exportData()" style="padding:8px 16px;background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:8px;cursor:pointer;font-size:13px">Export Data</button>
+        </div>
+        <div id="audit-stats" style="font-size:12px;color:var(--muted)"></div>
+      </div>
+
+      <!-- Connection -->
+      <div class="card">
+        <h3>Connection</h3>
+        <div id="connection-info" style="font-size:13px;color:var(--text)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const API = '';
+let conversations = [], summaries_data = [], analytics_data = {}, speakers = {};
+
+// Nav
+document.querySelectorAll('.sidebar nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.sidebar nav a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + a.dataset.section).classList.add('active');
+  });
+});
+
+function fmt(s) { return s < 60 ? s.toFixed(1) + 's' : (s / 60).toFixed(1) + 'm'; }
+function fmtUptime(s) { const h = Math.floor(s/3600), m = Math.floor((s%3600)/60); return h > 0 ? h+'h '+m+'m' : m+'m'; }
+
+function esc(s) { const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+function formatSummary(text) {
+  // Convert plain-text summary (with newlines, bullets, numbers) into readable HTML
+  if (!text) return '';
+  let html = esc(text);
+  // Convert markdown-style bold **text**
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Split into lines for structure
+  const lines = html.split('\n');
+  let out = '', inList = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) { if (inList) { out += '</ul>'; inList = false; } out += '<br>'; continue; }
+    // Bullet lines: - or • or *
+    const bulletMatch = trimmed.match(/^[-•*]\s+(.+)/);
+    // Numbered lines: 1. or 1)
+    const numMatch = trimmed.match(/^\d+[.)]\s+(.+)/);
+    if (bulletMatch || numMatch) {
+      if (!inList) { out += '<ul>'; inList = true; }
+      out += '<li>' + (bulletMatch ? bulletMatch[1] : numMatch[1]) + '</li>';
+    } else {
+      if (inList) { out += '</ul>'; inList = false; }
+      out += '<p>' + trimmed + '</p>';
+    }
+  }
+  if (inList) out += '</ul>';
+  return out;
+}
+
+function speakerName(id) {
+  if (speakers[id]) return speakers[id].name || id;
+  return id;
+}
+
+// Parse transcript string into lines with speaker + text
+function parseTranscriptLines(transcript) {
+  if (!transcript) return [];
+  if (typeof transcript !== 'string') {
+    // Array format
+    return (transcript || []).map(t => ({
+      speaker: speakerName(t.speaker),
+      text: t.text,
+      ts: t.start
+    }));
+  }
+  // String format: "[Speaker] text\n[Speaker] text"
+  return transcript.split('\n').filter(l => l.trim()).map(line => {
+    const m = line.match(/^\[([^\]]+)\]\s*(.*)/);
+    if (m) return { speaker: speakerName(m[1]), text: m[2] };
+    return { speaker: '', text: line };
+  });
+}
+
+function renderTranscriptHTML(transcript) {
+  const lines = parseTranscriptLines(transcript);
+  return lines.map(l => {
+    const tsHtml = l.ts != null ? `<span class="ts">[${l.ts}s]</span>` : '';
+    const spkHtml = l.speaker ? `<span class="speaker">${esc(l.speaker)}</span>` : '';
+    return `<div class="transcript-line">${tsHtml}${spkHtml}${esc(l.text)}</div>`;
+  }).join('');
+}
+
+function getPreview(transcript) {
+  if (!transcript) return '';
+  if (typeof transcript === 'string') return transcript.slice(0, 200);
+  return transcript.slice(0, 2).map(t => t.text).join(' ');
+}
+
+async function fetchAll() {
+  try {
+    const [healthR, convR, summR, analytR, liveR, spkR] = await Promise.all([
+      fetch(API+'/api/health').then(r=>r.json()).catch(()=>({})),
+      fetch(API+'/api/conversations').then(r=>r.json()).catch(()=>[]),
+      fetch(API+'/api/summaries').then(r=>r.json()).catch(()=>[]),
+      fetch(API+'/api/analytics').then(r=>r.json()).catch(()=>({})),
+      fetch(API+'/api/live').then(r=>r.json()).catch(()=>({lines:[]})),
+      fetch(API+'/api/speakers').then(r=>r.json()).catch(()=>({})),
+    ]);
+    speakers = spkR;
+    const dot = document.getElementById('omi-dot');
+    const st = document.getElementById('omi-status');
+    if (healthR.percept_online) { dot.className='status-dot on'; st.textContent='Online'; }
+    else { dot.className='status-dot off'; st.textContent='Offline'; }
+    document.getElementById('uptime').textContent = healthR.dashboard_uptime ? fmtUptime(healthR.dashboard_uptime) : '—';
+    const pd = healthR.percept || {};
+    document.getElementById('session-id').textContent = pd.session_id || '—';
+
+    conversations = convR;
+    summaries_data = summR;
+    analytics_data = analytR;
+    document.getElementById('conv-count').textContent = (convR.length + summR.length);
+
+    renderEvents();
+    renderTranscripts();
+    renderSummaries();
+    renderActions();
+    renderAnalytics();
+    renderLive(liveR);
+  } catch(e) { console.error(e); }
+}
+
+function renderEvents() {
+  let events = [];
+  conversations.forEach(c => {
+    const preview = getPreview(c.transcript);
+    events.push({ts: (c.date||'')+'T'+(c.time||''), type:'conversation', title: c.title||c.id||c.file, preview, transcript: c.transcript, tags: c.topics||[]});
+  });
+  summaries_data.forEach(s => events.push({ts: (s.date||'')+'T'+(s.time||''), type:'summary', title: s.title||s.file, preview: s.preview || (s.summary || '').slice(0,200) || getPreview(s.transcript), transcript: s.transcript, tags:[]}));
+  events.sort((a,b) => b.ts.localeCompare(a.ts));
+  const el = document.getElementById('events-list');
+  el.innerHTML = events.map(e => `
+    <div class="event-item card" onclick="this.classList.toggle('expanded')">
+      <span class="time">${e.ts.replace('T',' ')}</span><span class="type">${e.type}</span>
+      <div class="preview">${esc(e.preview).substring(0,200)}</div>
+      ${e.tags.length ? '<div style="margin-top:6px">'+e.tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join('')+'</div>' : ''}
+      <div class="details">${renderTranscriptHTML(e.transcript)}</div>
+    </div>
+  `).join('');
+}
+
+function renderTranscripts() {
+  const search = (document.getElementById('transcript-search').value||'').toLowerCase();
+  let filtered = conversations;
+  if (search) filtered = filtered.filter(c => JSON.stringify(c).toLowerCase().includes(search));
+  const groups = {};
+  filtered.forEach(c => { const d = c.date||'unknown'; (groups[d]=groups[d]||[]).push(c); });
+  const el = document.getElementById('transcripts-list');
+  let html = '';
+  Object.keys(groups).sort().reverse().forEach(date => {
+    html += `<h3 style="color:var(--muted);margin:16px 0 8px;font-size:13px">${date}</h3>`;
+    groups[date].forEach(c => {
+      html += `<div class="card event-item" onclick="this.classList.toggle('expanded')">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong style="color:var(--text)">${esc(c.title||c.id||c.file)}</strong>
+          <span style="font-size:12px;color:var(--muted)">${fmt(c.duration_seconds||c.duration_s||0)} · ${c.segment_count||c.segments||0} seg · ${c.word_count||0} words</span>
+        </div>
+        <div class="preview" style="margin-top:6px">${esc(getPreview(c.transcript)).substring(0,200)}</div>
+        <div style="margin-top:4px">${(c.topics||[]).map(t=>'<span class="tag">'+esc(t)+'</span>').join('')}</div>
+        <div class="details">${renderTranscriptHTML(c.transcript)}</div>
+      </div>`;
+    });
+  });
+  el.innerHTML = html || '<p style="color:var(--muted)">No transcripts found.</p>';
+}
+
+function renderSummaries() {
+  const el = document.getElementById('summaries-list');
+  // Merge summaries_data and conversations that have summaries
+  let items = [];
+
+  // From summaries endpoint
+  summaries_data.forEach(s => {
+    items.push({
+      title: s.title || s.id || s.file || 'Summary',
+      date: s.date,
+      duration: s.duration_min || (s.duration_seconds ? (s.duration_seconds/60).toFixed(1) : null),
+      segments: s.segments || s.segment_count,
+      summary: s.summary || s.full_text || null,
+      transcript: s.transcript,
+      preview: s.preview,
+      summaryFilePath: s.summary_file_path
+    });
+  });
+
+  // From conversations with summary or summary_file_path
+  conversations.forEach(c => {
+    if (c.summary || c.summary_file_path) {
+      // Don't duplicate if already in summaries_data
+      const isDup = summaries_data.some(s => s.id === c.id);
+      if (!isDup) {
+        items.push({
+          title: c.title || c.id || c.file || 'Conversation',
+          date: c.date,
+          duration: c.duration_seconds ? (c.duration_seconds/60).toFixed(1) : null,
+          segments: c.segment_count || c.segments,
+          summary: c.summary,
+          transcript: c.transcript,
+          summaryFilePath: c.summary_file_path
+        });
+      }
+    }
+  });
+
+  if (!items.length) {
+    el.innerHTML = '<div class="card"><p style="color:var(--text);opacity:.7">No summaries yet. Summaries are generated after conversations are processed by the LLM.</p></div>';
+    return;
+  }
+
+  el.innerHTML = items.map((s, i) => {
+    const durStr = s.duration ? s.duration + ' min' : '';
+    const segStr = s.segments ? s.segments + ' segments' : '';
+    const meta = [durStr, segStr].filter(Boolean).join(' · ');
+
+    // Summary content — prefer summary field, fall back to preview
+    const summaryContent = s.summary || s.preview || null;
+    const hasTranscript = !!s.transcript;
+    const uniqueId = 'sum-raw-' + i;
+
+    let mainContent = '';
+    if (summaryContent) {
+      mainContent = `<div class="summary-text">${formatSummary(summaryContent)}</div>`;
+    } else {
+      // No summary available — show first few transcript lines as preview
+      const lines = parseTranscriptLines(s.transcript);
+      const previewLines = lines.slice(0, 3);
+      mainContent = `<div style="color:var(--text);opacity:.7;font-size:13px;font-style:italic">No LLM summary available — showing transcript preview</div>
+        <div style="margin-top:8px">${previewLines.map(l => `<div class="transcript-line"><span class="speaker">${esc(l.speaker)}</span>${esc(l.text)}</div>`).join('')}</div>`;
+    }
+
+    let transcriptToggle = '';
+    if (hasTranscript) {
+      transcriptToggle = `
+        <span class="summary-toggle" onclick="event.stopPropagation();document.getElementById('${uniqueId}').classList.toggle('open');this.textContent=document.getElementById('${uniqueId}').classList.contains('open')?'▾ Hide transcript':'▸ Show full transcript'">▸ Show full transcript</span>
+        <div class="summary-raw" id="${uniqueId}">${renderTranscriptHTML(s.transcript)}</div>`;
+    }
+
+    return `
+    <div class="card" style="cursor:default">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <strong style="color:var(--text);font-size:14px">${esc(s.title)}</strong>
+        <span style="font-size:12px;color:var(--muted)">${s.date || ''} ${meta ? '· ' + meta : ''}</span>
+      </div>
+      ${mainContent}
+      ${transcriptToggle}
+    </div>`;
+  }).join('');
+}
+
+function renderActions() {
+  const search = (document.getElementById('action-search').value||'').toLowerCase();
+  let actions = analytics_data.actions || [];
+  if (search) actions = actions.filter(a => JSON.stringify(a).toLowerCase().includes(search));
+  const el = document.getElementById('actions-list');
+  if (!actions.length) {
+    el.innerHTML = '<div class="card"><p style="color:var(--text);opacity:.7">No voice actions detected yet.</p></div>';
+    return;
+  }
+
+  const completed = actions.filter(a => a.status === 'executed');
+  const humanTasks = actions.filter(a => a.status === 'human' || a.status === 'pending');
+  const failed = actions.filter(a => a.status === 'failed');
+
+  const typeIcons = {
+    reminder: '⏰', email: '📧', message: '💬', search: '🔍', note: '📝',
+    calendar: '📅', call: '📞', timer: '⏱️', music: '🎵', weather: '🌤️',
+    navigate: '🧭', light: '💡', default: '⚡'
+  };
+
+  function renderActionItem(a, icon) {
+    const typeIcon = typeIcons[a.intent || a.type] || typeIcons.default;
+    return `<div class="action-item">
+      <span class="status-icon">${icon}</span>
+      <div class="action-body">
+        <div><span class="action-type">${typeIcon} ${esc(a.intent || a.type || 'action')}</span></div>
+        <div class="action-desc">${esc(a.raw_text || a.text || '')}</div>
+        <div class="action-meta">${a.created_at ? new Date(a.created_at*1000).toLocaleString() : (a.date||'')+' '+(a.time||'')} ${a.result ? '· ' + esc(a.result) : ''}</div>
+      </div>
+    </div>`;
+  }
+
+  let html = '';
+
+  if (humanTasks.length) {
+    html += `<div class="actions-section-title">👤 Tasks for You <span style="font-size:12px;color:var(--muted);font-weight:400">(${humanTasks.length})</span></div>`;
+    html += '<div class="card" style="padding:0">';
+    html += humanTasks.map(a => renderActionItem(a, a.status === 'human' ? '👤' : '⏳')).join('');
+    html += '</div>';
+  }
+
+  if (completed.length) {
+    html += `<div class="actions-section-title">✅ Completed <span style="font-size:12px;color:var(--muted);font-weight:400">(${completed.length})</span></div>`;
+    html += '<div class="card" style="padding:0">';
+    html += completed.map(a => renderActionItem(a, '✅')).join('');
+    html += '</div>';
+  }
+
+  if (failed.length) {
+    html += `<div class="actions-section-title">❌ Failed <span style="font-size:12px;color:var(--muted);font-weight:400">(${failed.length})</span></div>`;
+    html += '<div class="card" style="padding:0">';
+    html += failed.map(a => renderActionItem(a, '❌')).join('');
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function renderAnalytics() {
+  const a = analytics_data;
+  document.getElementById('analytics-stats').innerHTML = [
+    {v: a.today_words||0, l:'Words Today'},
+    {v: a.week_words||0, l:'Words This Week'},
+    {v: a.month_words||0, l:'Words This Month'},
+    {v: a.total_words||0, l:'Total Words'},
+    {v: a.total_duration_s ? fmt(a.total_duration_s) : '0s', l:'Total Speaking Time'},
+    {v: a.conversation_count||0, l:'Conversations'},
+    {v: a.summary_count||0, l:'Summaries'},
+  ].map(s => `<div class="stat-card"><div class="value">${s.v}</div><div class="label">${s.l}</div></div>`).join('');
+
+  const sw = a.speaker_words || {};
+  const maxW = Math.max(...Object.values(sw), 1);
+  document.getElementById('speaker-chart').innerHTML = Object.entries(sw).map(([sp,w]) =>
+    `<div class="bar-col"><div class="bar" style="height:${(w/maxW)*100}%"></div><div class="bar-label">${speakerName(sp)}<br>${w}</div></div>`
+  ).join('') || '<span style="color:var(--muted)">No data</span>';
+
+  const sph = a.segments_per_hour || {};
+  const maxS = Math.max(...Object.values(sph), 1);
+  const hours = Object.keys(sph).sort();
+  document.getElementById('segments-chart').innerHTML = hours.map(h =>
+    `<div class="bar-col"><div class="bar" style="height:${(sph[h]/maxS)*100}%"></div><div class="bar-label">${h}:00<br>${sph[h]}</div></div>`
+  ).join('') || '<span style="color:var(--muted)">No data today</span>';
+}
+
+let _lastLiveLen = 0;
+let _liveInterval = null;
+function renderLive(data) {
+  const el = document.getElementById('live-feed');
+  const lines = (data.lines||[]).filter(l => l.trim() && !l.startsWith('---'));
+  // Format as caption bubbles
+  const html = lines.map(l => {
+    const match = l.match(/^\[(.+?)\]\s*(.+)$/);
+    if (match) return `<div style="padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--accent);font-weight:600;margin-right:8px">${match[1]}</span><span style="color:var(--text)">${match[2]}</span></div>`;
+    return `<div style="padding:4px 0;color:var(--text);opacity:.7">${l}</div>`;
+  }).join('');
+  el.innerHTML = html || '<p style="color:var(--muted)">No live transcript data. Start speaking near your Omi device.</p>';
+  el.scrollTop = el.scrollHeight;
+  // Update status indicator
+  const statusEl = document.getElementById('live-status');
+  if (lines.length > _lastLiveLen) {
+    statusEl.innerHTML = '🔴 Live — hearing audio';
+    statusEl.style.color = '#ef4444';
+  } else {
+    statusEl.innerHTML = '⏸ Waiting for audio...';
+    statusEl.style.color = 'var(--muted)';
+  }
+  _lastLiveLen = lines.length;
+}
+// Auto-refresh live feed every 3s when tab is active
+function startLiveRefresh() {
+  if (_liveInterval) return;
+  _liveInterval = setInterval(async () => {
+    if (!document.getElementById('sec-live').classList.contains('active')) return;
+    try {
+      const r = await fetch(API+'/api/live');
+      const d = await r.json();
+      renderLive(d);
+    } catch(e) {}
+  }, 3000);
+}
+startLiveRefresh();
+
+// Search
+document.getElementById('transcript-search').addEventListener('input', renderTranscripts);
+
+// --- Settings ---
+let settingsData = {};
+let settingsSpeakers = [];
+let settingsContacts = [];
+
+function showToast(msg, color) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = `position:fixed;bottom:20px;right:20px;padding:10px 20px;background:${color||'var(--green)'};color:#fff;border-radius:8px;font-size:13px;z-index:9999;transition:opacity .3s`;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+async function saveSetting(key, value) {
+  await fetch(API+'/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({[key]: value})});
+  showToast('Saved');
+}
+
+async function loadSettings() {
+  const [settings, spk, contacts, audit] = await Promise.all([
+    fetch(API+'/api/settings').then(r=>r.json()).catch(()=>({})),
+    fetch(API+'/api/settings/speakers').then(r=>r.json()).catch(()=>[]),
+    fetch(API+'/api/settings/contacts').then(r=>r.json()).catch(()=>[]),
+    fetch(API+'/api/audit').then(r=>r.json()).catch(()=>({})),
+  ]);
+  settingsData = settings;
+  settingsSpeakers = spk;
+  settingsContacts = contacts;
+  renderWakeWords();
+  renderSpeakersTable();
+  renderContactsTable();
+  renderTranscriberSetting();
+  renderIntentSettings();
+  renderPrivacySettings(audit);
+  renderConnectionInfo();
+}
+
+function renderWakeWords() {
+  let words = [];
+  try { words = JSON.parse(settingsData.wake_words || '[]'); } catch(e) {}
+  const el = document.getElementById('wake-words-chips');
+  el.innerHTML = words.map((w,i) => `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border:1px solid var(--accent);border-radius:99px;font-size:13px;color:var(--accent)">${esc(w)}<span onclick="removeWakeWord(${i})" style="cursor:pointer;opacity:.7">✕</span></span>`).join('');
+}
+
+function addWakeWord() {
+  const input = document.getElementById('new-wake-word');
+  const word = input.value.trim().toLowerCase();
+  if (!word) return;
+  let words = [];
+  try { words = JSON.parse(settingsData.wake_words || '[]'); } catch(e) {}
+  if (!words.includes(word)) { words.push(word); }
+  settingsData.wake_words = JSON.stringify(words);
+  saveSetting('wake_words', settingsData.wake_words);
+  input.value = '';
+  renderWakeWords();
+}
+
+function removeWakeWord(i) {
+  let words = [];
+  try { words = JSON.parse(settingsData.wake_words || '[]'); } catch(e) {}
+  words.splice(i, 1);
+  settingsData.wake_words = JSON.stringify(words);
+  saveSetting('wake_words', settingsData.wake_words);
+  renderWakeWords();
+}
+
+document.getElementById('new-wake-word').addEventListener('keydown', e => { if (e.key === 'Enter') addWakeWord(); });
+
+function renderSpeakersTable() {
+  const el = document.getElementById('speakers-table');
+  if (!settingsSpeakers.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">No speakers detected yet.</p>'; return; }
+  const rels = ['unknown','colleague','family','friend','client'];
+  el.innerHTML = `<table style="width:100%;font-size:13px;border-collapse:collapse">
+    <tr style="color:var(--muted);text-align:left"><th style="padding:6px">ID</th><th style="padding:6px">Name</th><th style="padding:6px">Relationship</th><th style="padding:6px">Words</th></tr>
+    ${settingsSpeakers.map(s => `<tr style="border-top:1px solid var(--border)">
+      <td style="padding:6px;color:var(--muted)">${esc(s.id)}</td>
+      <td style="padding:6px"><input class="search" value="${esc(s.name||'')}" style="margin:0;padding:4px 8px" onblur="saveSpeaker('${esc(s.id)}',this.value,this.parentElement.nextElementSibling.querySelector('select').value)"></td>
+      <td style="padding:6px"><select style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px" onchange="saveSpeaker('${esc(s.id)}',this.parentElement.previousElementSibling.querySelector('input').value,this.value)">${rels.map(r=>`<option value="${r}"${s.relationship===r?' selected':''}>${r}</option>`).join('')}</select></td>
+      <td style="padding:6px;color:var(--muted)">${s.total_words||0}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+async function saveSpeaker(id, name, relationship) {
+  await fetch(API+'/api/settings/speakers', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({[id]: {name, relationship}})});
+  showToast('Speaker updated');
+}
+
+function renderContactsTable() {
+  const el = document.getElementById('contacts-table');
+  if (!settingsContacts.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">No contacts yet.</p>'; return; }
+  el.innerHTML = `<table style="width:100%;font-size:13px;border-collapse:collapse">
+    <tr style="color:var(--muted);text-align:left"><th style="padding:6px">Name</th><th style="padding:6px">Email</th><th style="padding:6px">Phone</th><th style="padding:6px">Relationship</th><th style="padding:6px"></th></tr>
+    ${settingsContacts.map(c => `<tr style="border-top:1px solid var(--border)">
+      <td style="padding:6px;color:var(--text)">${esc(c.name)}</td>
+      <td style="padding:6px;color:var(--muted)">${esc(c.email||'')}</td>
+      <td style="padding:6px;color:var(--muted)">${esc(c.phone||'')}</td>
+      <td style="padding:6px;color:var(--muted)">${esc(c.relationship||'')}</td>
+      <td style="padding:6px"><span onclick="deleteContact('${c.id}')" style="cursor:pointer;color:var(--red)">✕</span></td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+function addContactRow() {
+  const el = document.getElementById('contacts-table');
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:8px;margin-top:10px';
+  row.innerHTML = `
+    <input class="search" placeholder="Name" style="margin:0;flex:1" id="nc-name">
+    <input class="search" placeholder="Email" style="margin:0;flex:1" id="nc-email">
+    <input class="search" placeholder="Phone" style="margin:0;flex:1" id="nc-phone">
+    <select style="background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px" id="nc-rel">
+      <option value="">Relationship</option><option value="colleague">colleague</option><option value="family">family</option><option value="friend">friend</option><option value="client">client</option>
+    </select>
+    <button onclick="saveNewContact(this.parentElement)" style="padding:4px 12px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer">Save</button>
+  `;
+  el.appendChild(row);
+}
+
+async function saveNewContact(row) {
+  const name = row.querySelector('#nc-name').value.trim();
+  if (!name) return;
+  await fetch(API+'/api/settings/contacts', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+    name, email: row.querySelector('#nc-email').value, phone: row.querySelector('#nc-phone').value, relationship: row.querySelector('#nc-rel').value
+  })});
+  showToast('Contact added');
+  row.remove();
+  settingsContacts = await fetch(API+'/api/settings/contacts').then(r=>r.json());
+  renderContactsTable();
+}
+
+async function deleteContact(id) {
+  if (!confirm('Delete this contact?')) return;
+  await fetch(API+'/api/settings/contacts/'+id, {method:'DELETE'});
+  showToast('Contact deleted');
+  settingsContacts = await fetch(API+'/api/settings/contacts').then(r=>r.json());
+  renderContactsTable();
+}
+
+function renderTranscriberSetting() {
+  const val = settingsData.transcriber || 'omi';
+  document.querySelectorAll('input[name="transcriber"]').forEach(r => {
+    r.checked = r.value === val;
+    r.onchange = () => saveSetting('transcriber', r.value);
+  });
+}
+
+function renderIntentSettings() {
+  const toggle = document.getElementById('intent-llm-toggle');
+  toggle.checked = settingsData.intent_llm_enabled === 'true';
+  toggle.onchange = () => saveSetting('intent_llm_enabled', toggle.checked ? 'true' : 'false');
+  const model = document.getElementById('intent-model');
+  model.value = settingsData.intent_llm_model || 'default';
+  model.onblur = () => saveSetting('intent_llm_model', model.value);
+}
+
+function renderPrivacySettings(audit) {
+  document.getElementById('ttl-utterances').value = settingsData.ttl_utterances_days || 30;
+  document.getElementById('ttl-summaries').value = settingsData.ttl_summaries_days || 90;
+  document.getElementById('ttl-relationships').value = settingsData.ttl_relationships_days || 180;
+  ['ttl-utterances','ttl-summaries','ttl-relationships'].forEach(id => {
+    const el = document.getElementById(id);
+    el.onblur = () => saveSetting(id.replace(/-/g,'_')+'_days', el.value);
+  });
+  const a = audit;
+  document.getElementById('audit-stats').innerHTML = `
+    <strong>Data Audit:</strong> ${a.conversations||0} conversations · ${a.utterances||0} utterances · ${a.speakers||0} speakers · ${a.contacts||0} contacts · ${a.relationships||0} relationships · ${a.entity_mentions||0} entities · ${((a.storage_bytes||0)/1024/1024).toFixed(2)} MB storage
+  `;
+}
+
+async function purgeNow() {
+  if (!confirm('This will permanently delete expired data based on current TTL settings. Continue?')) return;
+  const r = await fetch(API+'/api/purge', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+    ttl_utterances_days: document.getElementById('ttl-utterances').value,
+    ttl_summaries_days: document.getElementById('ttl-summaries').value,
+    ttl_relationships_days: document.getElementById('ttl-relationships').value,
+  })}).then(r=>r.json());
+  showToast(`Purged ${r.deleted_conversations} conversations`);
+  loadSettings();
+}
+
+function exportData() {
+  window.open(API+'/api/export', '_blank');
+}
+
+function renderConnectionInfo() {
+  const el = document.getElementById('connection-info');
+  const port = settingsData.webhook_port || '8900';
+  const dport = settingsData.dashboard_port || '8960';
+  el.innerHTML = `
+    <div style="margin-bottom:8px"><span style="color:var(--muted)">Webhook URL:</span> <code style="background:var(--bg);padding:2px 8px;border-radius:4px;color:var(--text)">http://localhost:${esc(port)}/webhook/transcript</code></div>
+    <div style="margin-bottom:8px"><span style="color:var(--muted)">Webhook Port:</span> ${esc(port)}</div>
+    <div><span style="color:var(--muted)">Dashboard Port:</span> ${esc(dport)}</div>
+  `;
+}
+
+// Load settings when navigating to settings tab
+document.querySelector('[data-section="settings"]').addEventListener('click', () => loadSettings());
+
+// Init + auto-refresh
+fetchAll();
+setInterval(fetchAll, 30000);
+</script>
+</body>
+</html>

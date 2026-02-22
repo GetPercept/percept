@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://percept.dev/schemas/conversation_event.json",
+  "title": "ConversationEvent",
+  "type": "object",
+  "required": ["type", "timestamp", "session_id", "duration_seconds", "segment_count", "speakers", "topics", "transcript"],
+  "properties": {
+    "type": { "const": "conversation" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "session_id": { "type": "string" },
+    "duration_seconds": { "type": "number" },
+    "segment_count": { "type": "integer" },
+    "speakers": { "type": "array", "items": { "type": "string" } },
+    "topics": { "type": "array", "items": { "type": "string" } },
+    "transcript": { "type": "string" }
+  }
+}

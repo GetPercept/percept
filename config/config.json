@@ -1,0 +1,24 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8900
+  },
+  "whisper": {
+    "model_size": "base",
+    "device": "auto",
+    "compute_type": "int8",
+    "language": "en",
+    "beam_size": 5
+  },
+  "audio": {
+    "sample_rate": 16000,
+    "channels": 1,
+    "sample_width": 2,
+    "silence_threshold_seconds": 30,
+    "min_audio_length_seconds": 2,
+    "max_buffer_seconds": 300
+  },
+  "memory": {
+    "conversations_dir": "/Users/jarvis/.openclaw/workspace/percept/memory/conversations"
+  }
+}

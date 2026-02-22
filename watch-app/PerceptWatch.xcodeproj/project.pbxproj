@@ -1,0 +1,453 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3587C8ECCD689FFCCCB3EBC5 /* PerceptWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 122B031D22DEE15F1530A74F /* PerceptWatchApp.swift */; };
+		419B55918A85F774A82B15F2 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AB25361ABBB05CAC80699C /* AudioRecorder.swift */; };
+		MOCK00000000000000000001 /* MockAudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = MOCK00000000000000000002 /* MockAudioRecorder.swift */; };
+		4E69575869451C36F894C2CC /* PerceptComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31512C00A8C543E9CECC8B97 /* PerceptComplication.swift */; };
+		635BA9B7703903C38C2BD4C5 /* RecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF08A9F460DFF1332E71CE0 /* RecordingView.swift */; };
+		82CE2F35A96984F4B5EADE79 /* AudioRelayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B74AD9E98A295961618600 /* AudioRelayService.swift */; };
+		96A002EC9B32BB0BBB84A427 /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B993F206A2AAF5CDAF2B245 /* AudioConfig.swift */; };
+		A74F3BB6146ABD7F3493079B /* PerceptSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6927162EC488CAA8595580B /* PerceptSettings.swift */; };
+		A9FD66FE5F02A23588A46BC7 /* AudioUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00974B3DBAB99E0959AB0F83 /* AudioUploader.swift */; };
+		AA7C8B5C87067476F92AB597 /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137D65C7189B1E1D616D7751 /* WatchConnectivityManager.swift */; };
+		AF3BB7F4C3C9C190818B7C0B /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8DC0E423AF59301B017B143 /* WaveformView.swift */; };
+		B978930EA424244B765EB3AF /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B993F206A2AAF5CDAF2B245 /* AudioConfig.swift */; };
+		C682FA32BCC520D0D2A75136 /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137D65C7189B1E1D616D7751 /* WatchConnectivityManager.swift */; };
+		C6D206FA5216AE0D1F912143 /* PerceptSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6927162EC488CAA8595580B /* PerceptSettings.swift */; };
+		D12BE9F1B33DDA22678CEFA3 /* CompanionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98017B1B392AB27CB076DD42 /* CompanionView.swift */; };
+		E4CAB1B92A4971148369D176 /* AudioUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00974B3DBAB99E0959AB0F83 /* AudioUploader.swift */; };
+		E5F15D64952D91DAD1863705 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1116CE740AFD9F6F652033D8 /* SettingsView.swift */; };
+		EFF1844A15A9B38932A3305C /* PerceptCompanionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37584FDF7CB1039C376B1500 /* PerceptCompanionApp.swift */; };
+		F7520822115008BFA8C98F19 /* RaiseToSpeakDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2850E08A128E08DF12D50BD2 /* RaiseToSpeakDetector.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E6FDB292A9810B9C19781528 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29F63AB451360B1CCC9B1AA4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F91D90676EB37A4030082461;
+			remoteInfo = PerceptCompanion;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		00974B3DBAB99E0959AB0F83 /* AudioUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioUploader.swift; sourceTree = "<group>"; };
+		1116CE740AFD9F6F652033D8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		122B031D22DEE15F1530A74F /* PerceptWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerceptWatchApp.swift; sourceTree = "<group>"; };
+		137D65C7189B1E1D616D7751 /* WatchConnectivityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityManager.swift; sourceTree = "<group>"; };
+		2850E08A128E08DF12D50BD2 /* RaiseToSpeakDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RaiseToSpeakDetector.swift; sourceTree = "<group>"; };
+		31512C00A8C543E9CECC8B97 /* PerceptComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerceptComplication.swift; sourceTree = "<group>"; };
+		35DC6776568E2C2110CB41A4 /* PerceptCompanion.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PerceptCompanion.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3635A3FEA45F3B05475ABA3D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		37584FDF7CB1039C376B1500 /* PerceptCompanionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerceptCompanionApp.swift; sourceTree = "<group>"; };
+		5FF08A9F460DFF1332E71CE0 /* RecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingView.swift; sourceTree = "<group>"; };
+		6886AFD80A3611148978EC91 /* PerceptWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PerceptWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		76FE1A38F48694C244B70824 /* PerceptWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PerceptWatch.entitlements; sourceTree = "<group>"; };
+		8597AAFC36901534465FD6BF /* PerceptCompanion.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PerceptCompanion.entitlements; sourceTree = "<group>"; };
+		8B993F206A2AAF5CDAF2B245 /* AudioConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConfig.swift; sourceTree = "<group>"; };
+		98017B1B392AB27CB076DD42 /* CompanionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionView.swift; sourceTree = "<group>"; };
+		B8DC0E423AF59301B017B143 /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
+		BFDAB0A724BE50E217D00306 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D9AB25361ABBB05CAC80699C /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
+		MOCK00000000000000000002 /* MockAudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAudioRecorder.swift; sourceTree = "<group>"; };
+		E6927162EC488CAA8595580B /* PerceptSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerceptSettings.swift; sourceTree = "<group>"; };
+		F9B74AD9E98A295961618600 /* AudioRelayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRelayService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		71147602B720C207604FEAAE = {
+			isa = PBXGroup;
+			children = (
+				76CB57C39EB8396BBF008A56 /* PerceptCompanion */,
+				FD43FCEBB3ADEFF18F729F5F /* PerceptWatch */,
+				AC310C146CF3ABC86B5CD138 /* Shared */,
+				B9957A8EAFEB331E0D1A96C7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		76CB57C39EB8396BBF008A56 /* PerceptCompanion */ = {
+			isa = PBXGroup;
+			children = (
+				F9B74AD9E98A295961618600 /* AudioRelayService.swift */,
+				98017B1B392AB27CB076DD42 /* CompanionView.swift */,
+				BFDAB0A724BE50E217D00306 /* Info.plist */,
+				8597AAFC36901534465FD6BF /* PerceptCompanion.entitlements */,
+				37584FDF7CB1039C376B1500 /* PerceptCompanionApp.swift */,
+				1116CE740AFD9F6F652033D8 /* SettingsView.swift */,
+			);
+			path = PerceptCompanion;
+			sourceTree = "<group>";
+		};
+		AC310C146CF3ABC86B5CD138 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				8B993F206A2AAF5CDAF2B245 /* AudioConfig.swift */,
+				00974B3DBAB99E0959AB0F83 /* AudioUploader.swift */,
+				E6927162EC488CAA8595580B /* PerceptSettings.swift */,
+				137D65C7189B1E1D616D7751 /* WatchConnectivityManager.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		B9957A8EAFEB331E0D1A96C7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				35DC6776568E2C2110CB41A4 /* PerceptCompanion.app */,
+				6886AFD80A3611148978EC91 /* PerceptWatch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FD43FCEBB3ADEFF18F729F5F /* PerceptWatch */ = {
+			isa = PBXGroup;
+			children = (
+				D9AB25361ABBB05CAC80699C /* AudioRecorder.swift */,
+				MOCK00000000000000000002 /* MockAudioRecorder.swift */,
+				3635A3FEA45F3B05475ABA3D /* Info.plist */,
+				31512C00A8C543E9CECC8B97 /* PerceptComplication.swift */,
+				76FE1A38F48694C244B70824 /* PerceptWatch.entitlements */,
+				122B031D22DEE15F1530A74F /* PerceptWatchApp.swift */,
+				2850E08A128E08DF12D50BD2 /* RaiseToSpeakDetector.swift */,
+				5FF08A9F460DFF1332E71CE0 /* RecordingView.swift */,
+				B8DC0E423AF59301B017B143 /* WaveformView.swift */,
+			);
+			path = PerceptWatch;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		595D49B6CDD3722B6A5C6DE5 /* PerceptWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6A8B9CE6EB88720F8D8C40C1 /* Build configuration list for PBXNativeTarget "PerceptWatch" */;
+			buildPhases = (
+				67DF7D28A44D3E6AE79ABD84 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3DC7E92BB2FCB2C46692CA1B /* PBXTargetDependency */,
+			);
+			name = PerceptWatch;
+			packageProductDependencies = (
+			);
+			productName = PerceptWatch;
+			productReference = 6886AFD80A3611148978EC91 /* PerceptWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F91D90676EB37A4030082461 /* PerceptCompanion */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C3552704BF19D3F16A0FD017 /* Build configuration list for PBXNativeTarget "PerceptCompanion" */;
+			buildPhases = (
+				DAE000AEB184B3E232B3E442 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PerceptCompanion;
+			packageProductDependencies = (
+			);
+			productName = PerceptCompanion;
+			productReference = 35DC6776568E2C2110CB41A4 /* PerceptCompanion.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29F63AB451360B1CCC9B1AA4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = DF87620B7466B769538ED920 /* Build configuration list for PBXProject "PerceptWatch" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 71147602B720C207604FEAAE;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F91D90676EB37A4030082461 /* PerceptCompanion */,
+				595D49B6CDD3722B6A5C6DE5 /* PerceptWatch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		67DF7D28A44D3E6AE79ABD84 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B978930EA424244B765EB3AF /* AudioConfig.swift in Sources */,
+				419B55918A85F774A82B15F2 /* AudioRecorder.swift in Sources */,
+				MOCK00000000000000000001 /* MockAudioRecorder.swift in Sources */,
+				E4CAB1B92A4971148369D176 /* AudioUploader.swift in Sources */,
+				4E69575869451C36F894C2CC /* PerceptComplication.swift in Sources */,
+				A74F3BB6146ABD7F3493079B /* PerceptSettings.swift in Sources */,
+				3587C8ECCD689FFCCCB3EBC5 /* PerceptWatchApp.swift in Sources */,
+				F7520822115008BFA8C98F19 /* RaiseToSpeakDetector.swift in Sources */,
+				635BA9B7703903C38C2BD4C5 /* RecordingView.swift in Sources */,
+				AA7C8B5C87067476F92AB597 /* WatchConnectivityManager.swift in Sources */,
+				AF3BB7F4C3C9C190818B7C0B /* WaveformView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DAE000AEB184B3E232B3E442 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96A002EC9B32BB0BBB84A427 /* AudioConfig.swift in Sources */,
+				82CE2F35A96984F4B5EADE79 /* AudioRelayService.swift in Sources */,
+				A9FD66FE5F02A23588A46BC7 /* AudioUploader.swift in Sources */,
+				D12BE9F1B33DDA22678CEFA3 /* CompanionView.swift in Sources */,
+				EFF1844A15A9B38932A3305C /* PerceptCompanionApp.swift in Sources */,
+				C6D206FA5216AE0D1F912143 /* PerceptSettings.swift in Sources */,
+				E5F15D64952D91DAD1863705 /* SettingsView.swift in Sources */,
+				C682FA32BCC520D0D2A75136 /* WatchConnectivityManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3DC7E92BB2FCB2C46692CA1B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F91D90676EB37A4030082461 /* PerceptCompanion */;
+			targetProxy = E6FDB292A9810B9C19781528 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		120F805540D471728AF4BD00 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PerceptWatch/PerceptWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = PerceptWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.percept.companion.watchkitapp;
+				SDKROOT = watchos;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+		12F8C49492986EA5B6101D39 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PerceptWatch/PerceptWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = PerceptWatch/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.percept.companion.watchkitapp;
+				SDKROOT = watchos;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+		305F8ACA7F7178A0F3B6D894 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PerceptCompanion/PerceptCompanion.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = PerceptCompanion/Info.plist;
+				INFOPLIST_VALUES = "PRODUCT_BUNDLE_IDENTIFIER=$(PRODUCT_BUNDLE_IDENTIFIER) UILaunchScreen={}";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.percept.companion;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4503A01677C5FE3D17FCFB9C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = PerceptCompanion/PerceptCompanion.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = PerceptCompanion/Info.plist;
+				INFOPLIST_VALUES = "PRODUCT_BUNDLE_IDENTIFIER=$(PRODUCT_BUNDLE_IDENTIFIER) UILaunchScreen={}";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.percept.companion;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4D27B866E03D185D2756A1AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		BA0AD58384456EEA99B6868A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6A8B9CE6EB88720F8D8C40C1 /* Build configuration list for PBXNativeTarget "PerceptWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				12F8C49492986EA5B6101D39 /* Debug */,
+				120F805540D471728AF4BD00 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C3552704BF19D3F16A0FD017 /* Build configuration list for PBXNativeTarget "PerceptCompanion" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4503A01677C5FE3D17FCFB9C /* Debug */,
+				305F8ACA7F7178A0F3B6D894 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DF87620B7466B769538ED920 /* Build configuration list for PBXProject "PerceptWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D27B866E03D185D2756A1AD /* Debug */,
+				BA0AD58384456EEA99B6868A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29F63AB451360B1CCC9B1AA4 /* Project object */;
+}
