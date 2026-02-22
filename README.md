@@ -26,14 +26,6 @@ Percept is an open-source ambient voice pipeline that connects wearable micropho
 
 **What makes Percept different:** It's not just transcription. The **Context Intelligence Layer (CIL)** transforms raw speech into structured, actionable context — entity extraction, relationship graphs, speaker resolution, and semantic search — so your agent actually *understands* what's being said.
 
-## Demo
-
-<p align="center">
-  <a href="docs/demo.svg">
-    <img src="docs/demo.svg" alt="Percept install demo" width="800">
-  </a>
-</p>
-
 ## Quick Start
 
 ```bash
