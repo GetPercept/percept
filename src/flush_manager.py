@@ -13,9 +13,9 @@ from collections import defaultdict
 logger = logging.getLogger(__name__)
 
 # Timing constants
-SILENCE_TIMEOUT = 5        # seconds before flushing accumulated segments
-COMMAND_TIMEOUT = 5        # extended wait when wake word detected
-CONVERSATION_END_TIMEOUT = 60  # seconds of silence → conversation over
+SILENCE_TIMEOUT = 2        # seconds before flushing accumulated segments
+COMMAND_TIMEOUT = 2        # extended wait when wake word detected
+CONVERSATION_END_TIMEOUT = 20  # seconds of silence → conversation over
 WAKE_CONTINUATION_WINDOW = 10  # seconds after wake flush to treat new speech as command
 
 

@@ -374,8 +374,25 @@ class IntentParser:
             body_match = re.split(r'\s+(?:saying|that)\s+', rest, maxsplit=1)
             if len(body_match) == 1 and 'tell' in pattern:
                 body_match = re.split(r'\s+(?:to|that)\s+', rest, maxsplit=1)
-            recipient_part = body_match[0].strip()
-            message = body_match[1].strip() if len(body_match) > 1 else ""
+            if len(body_match) > 1:
+                recipient_part = body_match[0].strip()
+                message = body_match[1].strip()
+            else:
+                # No explicit separator — try to split on first known contact name
+                # e.g. "text David the demo is working" → recipient=David, message=the demo is working
+                words = rest.split()
+                if len(words) >= 2:
+                    # Check if first word is a contact
+                    first_word = words[0]
+                    if _lookup_contact(first_word, "phone"):
+                        recipient_part = first_word
+                        message = " ".join(words[1:])
+                    else:
+                        recipient_part = rest
+                        message = ""
+                else:
+                    recipient_part = rest
+                    message = ""
 
         if recipient_part.lower() in ("me", "me a text", "myself"):
             recipient_part = "david"
