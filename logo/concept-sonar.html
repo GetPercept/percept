@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { margin: 0; display: flex; gap: 40px; padding: 40px; background: #0a0a0a; flex-wrap: wrap; justify-content: center; }
+  .logo-card { text-align: center; padding: 30px; }
+  .label { color: #888; font-family: system-ui; font-size: 14px; margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<!-- Concept 1: Sonar rings with center dot -->
+<div class="logo-card">
+  <svg width="200" height="200" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="90" fill="none" stroke="#ff4444" stroke-width="2" opacity="0.2"/>
+    <circle cx="100" cy="100" r="65" fill="none" stroke="#ff4444" stroke-width="2.5" opacity="0.4"/>
+    <circle cx="100" cy="100" r="40" fill="none" stroke="#ff4444" stroke-width="3" opacity="0.7"/>
+    <circle cx="100" cy="100" r="12" fill="#ff4444"/>
+  </svg>
+  <div class="label">1. Clean Sonar</div>
+</div>
+
+<!-- Concept 2: Radar sweep with rings -->
+<div class="logo-card">
+  <svg width="200" height="200" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="90" fill="none" stroke="#e8453c" stroke-width="1.5" opacity="0.15"/>
+    <circle cx="100" cy="100" r="65" fill="none" stroke="#e8453c" stroke-width="1.5" opacity="0.3"/>
+    <circle cx="100" cy="100" r="40" fill="none" stroke="#e8453c" stroke-width="1.5" opacity="0.5"/>
+    <circle cx="100" cy="100" r="8" fill="#e8453c"/>
+    <!-- Radar sweep -->
+    <path d="M100,100 L100,10" stroke="#e8453c" stroke-width="2" opacity="0.8"/>
+    <path d="M100,100 L100,10" stroke="url(#sweep1)" stroke-width="2">
+      <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <defs>
+      <linearGradient id="sweep1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#e8453c" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#e8453c" stop-opacity="1"/>
+      </linearGradient>
+    </defs>
+    <!-- Sweep cone -->
+    <path d="M100,100 L85,12 A90,90 0 0,1 115,12 Z" fill="#e8453c" opacity="0.1">
+      <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="3s" repeatCount="indefinite"/>
+    </path>
+  </svg>
+  <div class="label">2. Radar Sweep</div>
+</div>
+
+<!-- Concept 3: Half sonar / asymmetric -->
+<div class="logo-card">
+  <svg width="200" height="200" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="10" fill="#e8453c"/>
+    <path d="M100,100 A30,30 0 0,1 130,100" fill="none" stroke="#e8453c" stroke-width="3" opacity="0.8" stroke-linecap="round"/>
+    <path d="M100,100 A55,55 0 0,1 155,100" fill="none" stroke="#e8453c" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+    <path d="M100,100 A80,80 0 0,1 180,100" fill="none" stroke="#e8453c" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
+    <!-- Left side too -->
+    <path d="M100,100 A30,30 0 0,0 70,100" fill="none" stroke="#e8453c" stroke-width="3" opacity="0.8" stroke-linecap="round"/>
+    <path d="M100,100 A55,55 0 0,0 45,100" fill="none" stroke="#e8453c" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+    <path d="M100,100 A80,80 0 0,0 20,100" fill="none" stroke="#e8453c" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
+  </svg>
+  <div class="label">3. Broadcast Signal</div>
+</div>
+
+<!-- Concept 4: Sonar with P lettermark -->
+<div class="logo-card">
+  <svg width="200" height="200" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="90" fill="none" stroke="#e8453c" stroke-width="1.5" opacity="0.2"/>
+    <circle cx="100" cy="100" r="65" fill="none" stroke="#e8453c" stroke-width="2" opacity="0.35"/>
+    <circle cx="100" cy="100" r="40" fill="none" stroke="#e8453c" stroke-width="2.5" opacity="0.55"/>
+    <text x="100" y="118" text-anchor="middle" font-family="system-ui" font-weight="700" font-size="48" fill="#e8453c">P</text>
+  </svg>
+  <div class="label">4. P + Sonar</div>
+</div>
+
+<!-- Concept 5: Concentric with gradient fill -->
+<div class="logo-card">
+  <svg width="200" height="200" viewBox="0 0 200 200">
+    <defs>
+      <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#e8453c" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#e8453c" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="100" cy="100" r="90" fill="url(#glow)"/>
+    <circle cx="100" cy="100" r="85" fill="none" stroke="#e8453c" stroke-width="1" opacity="0.15" stroke-dasharray="4 4"/>
+    <circle cx="100" cy="100" r="60" fill="none" stroke="#e8453c" stroke-width="1.5" opacity="0.3" stroke-dasharray="4 4"/>
+    <circle cx="100" cy="100" r="35" fill="none" stroke="#e8453c" stroke-width="2" opacity="0.5"/>
+    <circle cx="100" cy="100" r="10" fill="#e8453c"/>
+    <!-- Detection blips -->
+    <circle cx="75" cy="60" r="4" fill="#e8453c" opacity="0.6"/>
+    <circle cx="140" cy="85" r="3" fill="#e8453c" opacity="0.4"/>
+    <circle cx="120" cy="135" r="3.5" fill="#e8453c" opacity="0.5"/>
+  </svg>
+  <div class="label">5. Radar + Blips</div>
+</div>
+
+<!-- Concept 6: Minimal sonar arcs -->
+<div class="logo-card">
+  <svg width="200" height="200" viewBox="0 0 200 200">
+    <circle cx="80" cy="100" r="10" fill="#e8453c"/>
+    <path d="M105,60 A50,50 0 0,1 105,140" fill="none" stroke="#e8453c" stroke-width="3" opacity="0.8" stroke-linecap="round"/>
+    <path d="M125,40 A75,75 0 0,1 125,160" fill="none" stroke="#e8453c" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/>
+    <path d="M145,20 A100,100 0 0,1 145,180" fill="none" stroke="#e8453c" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
+  </svg>
+  <div class="label">6. Signal Arcs</div>
+</div>
+
+</body>
+</html>

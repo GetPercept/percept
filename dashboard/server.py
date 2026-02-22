@@ -300,6 +300,14 @@ async def update_settings(request: Request):
     return {"ok": True}
 
 
+@app.delete("/api/settings/{key}")
+async def delete_setting(key: str):
+    deleted = db.delete_setting(key)
+    if not deleted:
+        return JSONResponse(status_code=404, content={"detail": "Setting not found"})
+    return {"ok": True}
+
+
 @app.get("/api/settings/speakers")
 async def get_settings_speakers():
     return db.get_speakers()
