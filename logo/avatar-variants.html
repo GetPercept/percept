@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { margin: 0; display: flex; gap: 40px; padding: 40px; background: #0a0a0a; flex-wrap: wrap; justify-content: center; }
+  .logo-card { text-align: center; padding: 20px; }
+  .label { color: #888; font-family: system-ui; font-size: 13px; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<!-- Full size on dark -->
+<div class="logo-card">
+  <svg width="200" height="200" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="90" fill="none" stroke="#e8453c" stroke-width="2" opacity="0.2"/>
+    <circle cx="100" cy="100" r="65" fill="none" stroke="#e8453c" stroke-width="2.5" opacity="0.4"/>
+    <circle cx="100" cy="100" r="40" fill="none" stroke="#e8453c" stroke-width="3" opacity="0.7"/>
+    <circle cx="100" cy="100" r="12" fill="#e8453c"/>
+  </svg>
+  <div class="label">Full (dark bg)</div>
+</div>
+
+<!-- Avatar circle crop on dark -->
+<div class="logo-card">
+  <svg width="128" height="128" viewBox="0 0 200 200">
+    <defs><clipPath id="circle"><circle cx="100" cy="100" r="100"/></clipPath></defs>
+    <g clip-path="url(#circle)">
+      <rect width="200" height="200" fill="#111"/>
+      <circle cx="100" cy="100" r="90" fill="none" stroke="#e8453c" stroke-width="3" opacity="0.2"/>
+      <circle cx="100" cy="100" r="65" fill="none" stroke="#e8453c" stroke-width="3.5" opacity="0.4"/>
+      <circle cx="100" cy="100" r="40" fill="none" stroke="#e8453c" stroke-width="4" opacity="0.7"/>
+      <circle cx="100" cy="100" r="12" fill="#e8453c"/>
+    </g>
+  </svg>
+  <div class="label">Avatar (128px, dark)</div>
+</div>
+
+<!-- Avatar on white -->
+<div class="logo-card" style="background: #fff; border-radius: 12px;">
+  <svg width="128" height="128" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="90" fill="none" stroke="#e8453c" stroke-width="3" opacity="0.25"/>
+    <circle cx="100" cy="100" r="65" fill="none" stroke="#e8453c" stroke-width="3.5" opacity="0.45"/>
+    <circle cx="100" cy="100" r="40" fill="none" stroke="#e8453c" stroke-width="4" opacity="0.7"/>
+    <circle cx="100" cy="100" r="12" fill="#e8453c"/>
+  </svg>
+  <div class="label" style="color:#666;">Avatar (white bg)</div>
+</div>
+
+<!-- X profile pic (circle crop, dark bg) -->
+<div class="logo-card">
+  <div style="width:80px;height:80px;border-radius:50%;overflow:hidden;display:inline-block;">
+    <svg width="80" height="80" viewBox="0 0 200 200">
+      <rect width="200" height="200" fill="#111"/>
+      <circle cx="100" cy="100" r="85" fill="none" stroke="#e8453c" stroke-width="4" opacity="0.2"/>
+      <circle cx="100" cy="100" r="60" fill="none" stroke="#e8453c" stroke-width="5" opacity="0.4"/>
+      <circle cx="100" cy="100" r="38" fill="none" stroke="#e8453c" stroke-width="6" opacity="0.7"/>
+      <circle cx="100" cy="100" r="14" fill="#e8453c"/>
+    </svg>
+  </div>
+  <div class="label">X profile (48px)</div>
+</div>
+
+<!-- Favicon size -->
+<div class="logo-card">
+  <div style="width:32px;height:32px;display:inline-block;border:1px solid #333;border-radius:4px;">
+    <svg width="32" height="32" viewBox="0 0 200 200">
+      <rect width="200" height="200" fill="#111"/>
+      <circle cx="100" cy="100" r="80" fill="none" stroke="#e8453c" stroke-width="8" opacity="0.3"/>
+      <circle cx="100" cy="100" r="50" fill="none" stroke="#e8453c" stroke-width="10" opacity="0.6"/>
+      <circle cx="100" cy="100" r="18" fill="#e8453c"/>
+    </svg>
+  </div>
+  <div class="label">Favicon (32px)</div>
+</div>
+
+<!-- With wordmark -->
+<div class="logo-card">
+  <svg width="300" height="60" viewBox="0 0 300 60">
+    <circle cx="30" cy="30" r="27" fill="none" stroke="#e8453c" stroke-width="1.2" opacity="0.2"/>
+    <circle cx="30" cy="30" r="19" fill="none" stroke="#e8453c" stroke-width="1.5" opacity="0.4"/>
+    <circle cx="30" cy="30" r="12" fill="none" stroke="#e8453c" stroke-width="1.8" opacity="0.7"/>
+    <circle cx="30" cy="30" r="4" fill="#e8453c"/>
+    <text x="70" y="38" font-family="system-ui" font-weight="600" font-size="28" fill="#e8e8e8" letter-spacing="2">PERCEPT</text>
+  </svg>
+  <div class="label">Wordmark</div>
+</div>
+
+</body>
+</html>

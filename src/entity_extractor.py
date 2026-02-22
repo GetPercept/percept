@@ -93,12 +93,24 @@ class EntityExtractor:
         for m in re.finditer(r'\b([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+(?:Inc\.?|Corp\.?|LLC|Ltd\.?|Co\.?)\b', text):
             entities.append(ExtractedEntity("org", m.group(), 0.8, text[max(0,m.start()-20):m.end()+20]))
 
+        # Known products/tech — classify before the generic capitalized phrase pass
+        _KNOWN_PRODUCTS = {
+            "apple watch", "apple tv", "apple music", "apple pay",
+            "google maps", "google drive", "google cloud", "google home",
+            "amazon echo", "amazon alexa", "mac mini", "mac pro",
+            "microsoft teams", "visual studio", "open ai", "chat gpt",
+            "omi pendant", "omi device",
+        }
+
         # Capitalized multi-word phrases (potential names/orgs) — lower confidence
         for m in re.finditer(r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b', text):
             name = m.group(1)
             # Skip if already captured
             if not any(e.name == name for e in entities):
-                entities.append(ExtractedEntity("person", name, 0.6, text[max(0,m.start()-20):m.end()+20]))
+                if name.lower() in _KNOWN_PRODUCTS:
+                    entities.append(ExtractedEntity("product", name, 0.7, text[max(0,m.start()-20):m.end()+20]))
+                else:
+                    entities.append(ExtractedEntity("person", name, 0.6, text[max(0,m.start()-20):m.end()+20]))
 
         return entities
 

@@ -232,6 +232,12 @@ class PerceptDB:
             rows = self._conn.execute("SELECT key, value FROM settings").fetchall()
         return {r["key"]: r["value"] for r in rows}
 
+    def delete_setting(self, key: str) -> bool:
+        with self._lock:
+            cur = self._conn.execute("DELETE FROM settings WHERE key = ?", (key,))
+            self._conn.commit()
+            return cur.rowcount > 0
+
     # --- Conversations ---
 
     def save_conversation(self, id: str, timestamp: float, date: str,
