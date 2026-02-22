@@ -64,7 +64,7 @@ Say **"Hey Jarvis, remind me to check email"** and watch it work.
 - 🏎️ **Two-Tier Hybrid** — Fast regex (handles ~80% of commands instantly) + LLM fallback
 - 🔢 **Spoken Number Support** — "thirty minutes" → 1800s, "an hour and a half" → 5400s
 - 📇 **Contact Resolution** — "email Sarah" auto-resolves from contacts registry
-- 💬 **Spoken Email Normalization** — "david at vectorcare dot com" → user@example.com
+- 💬 **Spoken Email Normalization** — "jane at example dot com" → jane@example.com
 
 ## Architecture
 
@@ -244,7 +244,7 @@ percept/
 We'd love your help:
 
 1. ⭐ **Star the repo** — helps more than you think
-2. 🧪 **Try it** — install, use it for a day, [file issues](https://github.com/getpercept/percept/issues)
+2. 🧪 **Try it** — install, use it for a day, [file issues](https://github.com/GetPercept/percept/issues)
 3. 🔧 **Build** — language packs, hardware integrations, new action types
 4. 📣 **Share** — blog about it, tweet about it
 

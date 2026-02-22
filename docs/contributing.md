@@ -3,7 +3,7 @@
 ## Dev Environment Setup
 
 ```bash
-git clone https://github.com/getpercept/percept.git
+git clone https://github.com/GetPercept/percept.git
 cd percept
 
 # Create virtual environment

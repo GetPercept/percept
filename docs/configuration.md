@@ -222,7 +222,7 @@ Legacy file `data/contacts.json`:
 {
   "david": {
     "email": "user@example.com",
-    "phone": "+10000000000",
+    "phone": "+1XXXXXXXXXX",
     "aliases": ["dave"]
   },
   "sarah": {
