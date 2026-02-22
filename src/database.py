@@ -371,11 +371,15 @@ class PerceptDB:
 
     def save_entity_mention(self, conversation_id: str, entity_type: str, entity_name: str):
         with self._lock:
-            self._conn.execute("""
-                INSERT INTO entity_mentions (conversation_id, entity_type, entity_name, timestamp)
-                VALUES (?, ?, ?, ?)
-            """, (conversation_id, entity_type, entity_name, time.time()))
-            self._conn.commit()
+            try:
+                self._conn.execute("""
+                    INSERT INTO entity_mentions (conversation_id, entity_type, entity_name, timestamp)
+                    VALUES (?, ?, ?, ?)
+                """, (conversation_id, entity_type, entity_name, time.time()))
+                self._conn.commit()
+            except Exception:
+                # FK constraint can fail if conversation not yet saved — skip silently
+                pass
 
     def search_entities(self, query: str) -> list[dict]:
         with self._lock:

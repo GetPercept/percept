@@ -74,8 +74,9 @@ async def _send_imessage(text: str):
             return
             
         env = os.environ.copy()  # Inherit system PATH
+        _imsg_target = _db.get_setting("dispatch_target", "+14153414104")
         proc = await asyncio.create_subprocess_exec(
-            imsg_path, "send", "--to", "+1XXXXXXXXXX", "--text", text,  # TODO: load from config
+            imsg_path, "send", "--to", _imsg_target, "--text", text,
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
             env=env,
         )
@@ -86,6 +87,22 @@ async def _send_imessage(text: str):
             print(f"[IMSG] Error: {stderr.decode()[:200]}", flush=True)
     except Exception as e:
         print(f"[IMSG] Failed: {e}", flush=True)
+
+
+async def _send_reminder(openclaw_path: str, channel: str, target: str, task: str, env: dict):
+    """Send a reminder message after the delay has elapsed."""
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            openclaw_path, "message", "send",
+            "--channel", channel, "--target", target,
+            "--message", f"🔔 Reminder: {task}",
+            "--json",
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env,
+        )
+        await asyncio.wait_for(proc.communicate(), timeout=15)
+        print(f"[REMINDER] Fired: {task}", flush=True)
+    except Exception as e:
+        print(f"[REMINDER] Failed: {e}", flush=True)
 
 
 # --- Contacts Registry ---
@@ -103,8 +120,23 @@ def _load_contacts() -> dict:
 def _lookup_contact(name: str, field: str = "email") -> str | None:
     """Look up contact by name or alias. Returns email/phone or None.
     
+    "me" / "myself" resolves to the owner contact (is_owner: true in contacts.json).
     First tries the new address book database, then falls back to JSON file.
     """
+    # Resolve "me" / "myself" to the owner contact
+    if name.lower().strip() in ("me", "myself", "my"):
+        contacts = _load_contacts()
+        for _cname, info in contacts.items():
+            if info.get("is_owner"):
+                result = info.get(field)
+                if result:
+                    logger.info(f"'me' resolved to owner: {_cname} -> {field}={result}")
+                    return result
+        # Fall back to dispatch_target setting for phone
+        if field == "phone":
+            return _db.get_setting("dispatch_target", "+14153414104")
+        return None
+
     # Try new address book database first
     try:
         contact = _db.resolve_address_book_contact(name)
@@ -553,20 +585,92 @@ async def _flush_transcript(session_key: str):
                 return
                 
             env = os.environ.copy()  # Inherit system PATH
-            proc = await asyncio.create_subprocess_exec(
-                openclaw_path, "agent", "--message", msg, "--to", "+1XXXXXXXXXX",  # TODO: load from config
-                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
-                env=env,
-            )
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
-            if proc.returncode == 0:
-                print(f"[OPENCLAW] Sent successfully", flush=True)
-                if _action_id:
-                    _db.update_action_status(_action_id, "executed", stdout.decode()[:500])
+            _dispatch_target = _db.get_setting("dispatch_target", "+14153414104")
+            _dispatch_channel = _db.get_setting("dispatch_channel", "imessage")
+
+            # Route by action type — lightweight actions use message send,
+            # complex actions use full agent turn
+            if msg.startswith("VOICE_ACTION:"):
+                try:
+                    action_data = json.loads(msg[len("VOICE_ACTION:"):].strip())
+                except Exception:
+                    action_data = {}
+
+                action_type = action_data.get("action", "unknown")
+
+                if action_type == "reminder":
+                    # Direct reminder: send confirmation now, schedule reminder message
+                    task = action_data.get("task", "something")
+                    when = action_data.get("when", "soon")
+                    when_seconds = action_data.get("when_seconds", 300)
+                    # Send confirmation
+                    confirm_proc = await asyncio.create_subprocess_exec(
+                        openclaw_path, "message", "send",
+                        "--channel", _dispatch_channel, "--target", _dispatch_target,
+                        "--message", f"⏰ Reminder set ({when}): {task}",
+                        "--json",
+                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env,
+                    )
+                    await asyncio.wait_for(confirm_proc.communicate(), timeout=15)
+                    # Schedule the actual reminder via at/sleep
+                    asyncio.get_event_loop().call_later(
+                        when_seconds,
+                        lambda t=task: asyncio.ensure_future(_send_reminder(openclaw_path, _dispatch_channel, _dispatch_target, t, env))
+                    )
+                    print(f"[OPENCLAW] Reminder set: '{task}' in {when_seconds}s", flush=True)
+                    if _action_id:
+                        _db.update_action_status(_action_id, "executed", f"Reminder: {task} in {when}")
+                elif action_type == "text":
+                    # Direct text message
+                    to = action_data.get("to", _dispatch_target)
+                    body = action_data.get("body", action_data.get("message", ""))
+                    proc = await asyncio.create_subprocess_exec(
+                        openclaw_path, "message", "send",
+                        "--channel", _dispatch_channel, "--target", to,
+                        "--message", body, "--json",
+                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env,
+                    )
+                    stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=15)
+                    if proc.returncode == 0:
+                        print(f"[OPENCLAW] Text sent to {to}", flush=True)
+                        if _action_id:
+                            _db.update_action_status(_action_id, "executed", f"Sent to {to}")
+                    else:
+                        print(f"[OPENCLAW] Text error: {stderr.decode()[:200]}", flush=True)
+                        if _action_id:
+                            _db.update_action_status(_action_id, "failed", stderr.decode()[:500])
+                else:
+                    # Complex actions (email, search, calendar, etc.) — use full agent turn
+                    proc = await asyncio.create_subprocess_exec(
+                        openclaw_path, "agent", "--message", msg,
+                        "--to", _dispatch_target, "--channel", _dispatch_channel, "--deliver",
+                        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env,
+                    )
+                    stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
+                    if proc.returncode == 0:
+                        print(f"[OPENCLAW] Agent turn completed", flush=True)
+                        if _action_id:
+                            _db.update_action_status(_action_id, "executed", stdout.decode()[:500])
+                    else:
+                        print(f"[OPENCLAW] Error: {stderr.decode()[:200]}", flush=True)
+                        if _action_id:
+                            _db.update_action_status(_action_id, "failed", stderr.decode()[:500])
             else:
-                print(f"[OPENCLAW] Error: {stderr.decode()[:200]}", flush=True)
-                if _action_id:
-                    _db.update_action_status(_action_id, "failed", stderr.decode()[:500])
+                # VOICE: prefix — general command, use agent turn
+                proc = await asyncio.create_subprocess_exec(
+                    openclaw_path, "agent", "--message", msg,
+                    "--to", _dispatch_target, "--channel", _dispatch_channel, "--deliver",
+                    stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, env=env,
+                )
+                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
+                if proc.returncode == 0:
+                    print(f"[OPENCLAW] Sent successfully", flush=True)
+                    if _action_id:
+                        _db.update_action_status(_action_id, "executed", stdout.decode()[:500])
+                else:
+                    print(f"[OPENCLAW] Error: {stderr.decode()[:200]}", flush=True)
+                    if _action_id:
+                        _db.update_action_status(_action_id, "failed", stderr.decode()[:500])
         except Exception as e:
             logger.error(f"Failed to send to OpenClaw: {e}")
             if _action_id:
