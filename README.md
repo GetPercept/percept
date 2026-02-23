@@ -22,6 +22,10 @@
 
 ---
 
+https://github.com/GetPercept/percept/raw/main/demo.mp4
+
+---
+
 Percept is an open-source ambient voice pipeline that connects wearable microphones to AI agents. Wear a pendant, speak naturally, and your agent executes voice commands, summarizes meetings, identifies speakers, and builds a searchable knowledge graph — all processed locally on your machine.
 
 **What makes Percept different:** It's not just transcription. The **Context Intelligence Layer (CIL)** transforms raw speech into structured, actionable context — entity extraction, relationship graphs, speaker resolution, and semantic search — so your agent actually *understands* what's being said.
