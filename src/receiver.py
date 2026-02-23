@@ -26,6 +26,7 @@ from src.context_engine import ContextEngine
 from src.speaker_manager import load_speakers, save_speakers, resolve_speaker, resolve_text_with_names, is_speaker_authorized
 from src.flush_manager import FlushManager
 from src.action_dispatcher import dispatch_to_openclaw, send_imessage, save_action_to_db, extract_command_after_wake
+from src.command_safety import classify_command_safety
 from src.summary_manager import build_transcript_with_names, get_calendar_context, build_day_summary
 
 logger = logging.getLogger(__name__)
@@ -575,6 +576,27 @@ async def _flush_transcript(session_key: str):
             context_segs = list(_conversation_segments.get(conv_key_ctx, []))[-5:]
             msg = await intent_parser.parse_async(clean_text or full_text, context_segs)
             print(f"[DISPATCH] {msg[:200]}", flush=True)
+
+            # --- Command safety check ---
+            parsed_for_safety = {}
+            if msg.startswith("VOICE_ACTION:"):
+                try:
+                    parsed_for_safety = json.loads(msg[len("VOICE_ACTION:"):].strip())
+                except Exception:
+                    pass
+            safety = classify_command_safety(clean_text or full_text, parsed_for_safety)
+            if safety.level == "blocked":
+                print(f"[SAFETY] BLOCKED: {safety.reason} ({safety.category})", flush=True)
+                _db.log_security_event(
+                    speaker_id=list(segment_speakers)[0] if segment_speakers else "unknown",
+                    transcript_snippet=(clean_text or full_text)[:500],
+                    reason="dangerous_command",
+                    details=f"{safety.category}: {safety.matched_pattern}",
+                )
+                await _send_imessage(f"⚠️ Blocked dangerous command: {safety.reason}\nTranscript: {(clean_text or full_text)[:200]}")
+                return
+            # --- End safety check ---
+
             # Save action to database if it's a VOICE_ACTION
             _action_id = None
             if msg.startswith("VOICE_ACTION:"):
