@@ -11,7 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from collections import defaultdict
 
-from fastapi import FastAPI, Request, Query
+from fastapi import FastAPI, Request, Query, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -43,6 +43,21 @@ def _get_binary_path(name: str) -> str:
 # Initialize database
 _db = PerceptDB()
 _entity_extractor = EntityExtractor(db=_db, llm_enabled=False)
+
+# --- Audio buffer + transcriber for Watch app ---
+from src.audio_buffer import AudioBufferManager
+from src.audio_transcriber import AudioTranscriber, pcm16_to_float32
+
+_audio_transcriber = None  # lazy init to avoid loading model at import time
+
+
+def _get_audio_transcriber() -> AudioTranscriber:
+    global _audio_transcriber
+    if _audio_transcriber is None:
+        _audio_transcriber = AudioTranscriber(
+            model_size=CONFIG.get("whisper", {}).get("model_size", "base"),
+        )
+    return _audio_transcriber
 
 # Wake words cache (reloads from DB every 60s)
 _wake_words_cache = None
@@ -1038,6 +1053,126 @@ Question: {text}"""
         print(f"[AMBIENT] Sent to OpenClaw", flush=True)
     except Exception as e:
         print(f"[AMBIENT] Failed: {e}", flush=True)
+
+
+async def _on_audio_complete(session_id: str, pcm_bytes: bytes):
+    """Called when audio buffer flushes (3s silence). Transcribe and feed into pipeline."""
+    try:
+        at = _get_audio_transcriber()
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(None, at.transcribe, pcm_bytes)
+
+        if not result.text:
+            print(f"[AUDIO] Session {session_id}: silence/empty — skipping", flush=True)
+            return
+
+        print(f"[AUDIO] Session {session_id} transcribed: {result.text[:200]}", flush=True)
+
+        # Feed into the same pipeline as webhook/transcript
+        # Create synthetic segment data matching what Omi sends
+        now = time.time()
+        segment_data = [{
+            "text": result.text,
+            "speaker": "WATCH_USER",
+            "is_user": True,
+            "start": 0.0,
+            "end": len(pcm_bytes) / (SAMPLE_RATE * 2),
+        }]
+
+        # Accumulate for flush (same as transcript webhook)
+        session_key = f"watch_{session_id}"
+        for s in segment_data:
+            _accumulated_segments[session_key].append({
+                "text": s["text"],
+                "speaker": s["speaker"],
+                "is_user": s["is_user"],
+                "start": s["start"],
+                "end": s["end"],
+                "start_time": now,
+            })
+        _last_segment_time[session_key] = now
+
+        # Cancel previous flush timer and start a new one
+        if session_key in _flush_tasks:
+            _flush_tasks[session_key].cancel()
+        _flush_tasks[session_key] = asyncio.create_task(_schedule_flush(session_key))
+
+        # Also add to conversation-level tracking
+        conv_key = f"conv_watch_{session_id}"
+        if conv_key not in _conversation_start:
+            _conversation_start[conv_key] = now
+        _conversation_segments[conv_key].append({
+            "text": result.text,
+            "speaker": "WATCH_USER",
+            "is_user": True,
+        })
+        if conv_key in _conversation_end_tasks:
+            _conversation_end_tasks[conv_key].cancel()
+        _conversation_end_tasks[conv_key] = asyncio.create_task(_schedule_conversation_end(conv_key))
+
+    except Exception as e:
+        logger.error(f"Audio transcription pipeline error for session {session_id}: {e}", exc_info=True)
+
+
+_audio_buffer_manager = AudioBufferManager(on_complete=_on_audio_complete)
+
+
+@app.post("/audio")
+async def receive_audio_chunks(request: Request):
+    """Receive raw PCM16 audio chunks from Apple Watch app.
+
+    Accepts multipart/form-data with:
+      - metadata (JSON): sessionId, sequenceNumber, sampleRate, channels, encoding, duration, deviceId, timestamp
+      - audio (binary): raw PCM16 bytes
+    Auth: ?token= query param OR Authorization: Bearer header.
+    """
+    # Auth check (same as webhook endpoints)
+    auth_error = _check_webhook_auth(request)
+    if auth_error:
+        _db.log_security_event("WATCH_USER", "audio_upload", auth_error,
+                               "Missing or invalid auth on /audio")
+        return JSONResponse({"status": "unauthorized"}, status_code=401)
+
+    # Parse multipart form
+    form = await request.form()
+    metadata_field = form.get("metadata")
+    audio_field = form.get("audio")
+
+    if not metadata_field or not audio_field:
+        return JSONResponse({"status": "bad_request", "error": "missing metadata or audio part"}, status_code=400)
+
+    # Parse metadata JSON
+    try:
+        if hasattr(metadata_field, "read"):
+            metadata_bytes = await metadata_field.read()
+            metadata = json.loads(metadata_bytes)
+        else:
+            metadata = json.loads(str(metadata_field))
+    except Exception:
+        return JSONResponse({"status": "bad_request", "error": "invalid metadata JSON"}, status_code=400)
+
+    session_id = metadata.get("sessionId", "unknown")
+    sequence_number = metadata.get("sequenceNumber", 0)
+
+    # Read audio bytes
+    if hasattr(audio_field, "read"):
+        audio_bytes = await audio_field.read()
+    else:
+        audio_bytes = bytes(audio_field) if audio_field else b""
+
+    if not audio_bytes:
+        return JSONResponse({"status": "bad_request", "error": "empty audio"}, status_code=400)
+
+    print(f"[AUDIO] Chunk received: session={session_id} seq={sequence_number} bytes={len(audio_bytes)}", flush=True)
+
+    # Buffer the chunk (async — will trigger transcription after silence)
+    await _audio_buffer_manager.add_chunk(session_id, sequence_number, audio_bytes)
+
+    return {
+        "status": "received",
+        "sessionId": session_id,
+        "sequenceNumber": sequence_number,
+    }
 
 
 @app.get("/health")
