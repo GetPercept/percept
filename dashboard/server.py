@@ -1,8 +1,8 @@
 """Percept Dashboard API Server — port 8960 (SQLite-backed)"""
-import os, re, json, time, datetime, uuid
+import hashlib, hmac, os, re, json, time, datetime, uuid, secrets
 from pathlib import Path
 from fastapi import FastAPI, Query, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse, RedirectResponse
 import uvicorn, httpx
 
 import sys
@@ -19,6 +19,123 @@ DASHBOARD_HTML = Path(__file__).parent / "index.html"
 START_TIME = time.time()
 
 db = PerceptDB(str(DATA / "percept.db"))
+
+# --- Auth helpers ---
+_COOKIE_NAME = "percept_session"
+_COOKIE_SECRET = secrets.token_hex(32)  # rotates on restart (intentional)
+
+
+def _get_dashboard_password() -> str | None:
+    """Get dashboard password from DB settings. None = auth disabled."""
+    return db.get_setting("dashboard_password")
+
+
+def _sign_cookie(password: str) -> str:
+    """Create a signed session token from the password."""
+    h = hashlib.sha256(f"{password}:{_COOKIE_SECRET}".encode()).hexdigest()
+    return h
+
+
+def _verify_cookie(token: str) -> bool:
+    """Verify a session cookie token."""
+    pw = _get_dashboard_password()
+    if not pw:
+        return True  # no password = always valid
+    expected = _sign_cookie(pw)
+    return hmac.compare_digest(token, expected)
+
+
+def _check_auth(request: Request) -> bool:
+    """Check if request is authenticated via cookie or Bearer token.
+    Returns True if auth passes (or no password configured)."""
+    pw = _get_dashboard_password()
+    if not pw:
+        return True  # no password configured = allow all
+    # Check Bearer header
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header == f"Bearer {pw}":
+        return True
+    # Check session cookie
+    cookie = request.cookies.get(_COOKIE_NAME, "")
+    if cookie and _verify_cookie(cookie):
+        return True
+    return False
+
+
+def _auth_redirect_or_401(request: Request):
+    """Return redirect to /login for browser requests, 401 for API requests."""
+    if request.url.path.startswith("/api/"):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    return RedirectResponse("/login", status_code=302)
+
+
+# --- Login/Logout routes ---
+
+LOGIN_HTML = """<!DOCTYPE html>
+<html><head><title>Percept — Login</title>
+<style>
+body { font-family: -apple-system, sans-serif; background: #0a0a0f; color: #e0e0e0;
+       display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+.card { background: #1a1a2e; padding: 2rem; border-radius: 12px; width: 320px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+h2 { margin: 0 0 1.5rem; text-align: center; }
+input[type=password] { width: 100%; padding: 10px; border: 1px solid #333; border-radius: 6px;
+       background: #0a0a0f; color: #e0e0e0; font-size: 16px; box-sizing: border-box; margin-bottom: 1rem; }
+button { width: 100%; padding: 10px; border: none; border-radius: 6px; background: #6c5ce7;
+         color: white; font-size: 16px; cursor: pointer; }
+button:hover { background: #5a4bd1; }
+.error { color: #ff6b6b; text-align: center; margin-bottom: 1rem; font-size: 14px; }
+</style></head><body>
+<div class="card">
+<h2>🔒 Percept Dashboard</h2>
+{error}
+<form method="POST" action="/login">
+<input type="password" name="password" placeholder="Password" autofocus required>
+<button type="submit">Sign In</button>
+</form></div></body></html>"""
+
+
+@app.get("/login")
+async def login_page():
+    pw = _get_dashboard_password()
+    if not pw:
+        return RedirectResponse("/", status_code=302)
+    return HTMLResponse(LOGIN_HTML.format(error=""))
+
+
+@app.post("/login")
+async def login_submit(request: Request):
+    pw = _get_dashboard_password()
+    if not pw:
+        return RedirectResponse("/", status_code=302)
+    form = await request.form()
+    submitted = form.get("password", "")
+    if submitted == pw:
+        token = _sign_cookie(pw)
+        response = RedirectResponse("/", status_code=302)
+        response.set_cookie(_COOKIE_NAME, token, httponly=True, samesite="lax", max_age=86400 * 7)
+        return response
+    return HTMLResponse(LOGIN_HTML.format(error='<p class="error">Invalid password</p>'))
+
+
+@app.get("/logout")
+async def logout():
+    response = RedirectResponse("/login", status_code=302)
+    response.delete_cookie(_COOKIE_NAME)
+    return response
+
+
+# --- Auth middleware ---
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    # Public routes
+    path = request.url.path
+    if path in ("/login", "/health", "/api/health") or path.startswith("/login"):
+        return await call_next(request)
+    # Check auth
+    if not _check_auth(request):
+        return _auth_redirect_or_401(request)
+    return await call_next(request)
 
 
 @app.get("/")
