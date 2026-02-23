@@ -64,6 +64,13 @@ Say **"Hey Jarvis, remind me to check email"** and watch it work.
 - 📊 **FTS5 Full-Text Search** — Porter-stemmed search across all utterances
 - ⏰ **TTL Auto-Purge** — Configurable retention: utterances 30d, summaries 90d, relationships 180d
 
+### Security
+- 🔐 **Speaker Authorization** — Allowlist of authorized speakers. Only approved voices trigger commands
+- 🔑 **Webhook Authentication** — Bearer token or URL token (`?token=`) on all webhook endpoints
+- 📋 **Security Audit Log** — All blocked attempts logged with timestamp, speaker, transcript snippet, and reason
+- 🛡️ **Injection Resistant** — Intent parser rejects prompt injection attempts (credential exfiltration, system commands, data leaks)
+- 🏠 **Local-First** — Audio and transcripts never leave your machine. No cloud dependency
+
 ### Intent Parser
 - 🏎️ **Two-Tier Hybrid** — Fast regex (handles ~80% of commands instantly) + LLM fallback
 - 🔢 **Spoken Number Support** — "thirty minutes" → 1800s, "an hour and a half" → 5400s
@@ -78,12 +85,15 @@ Say **"Hey Jarvis, remind me to check email"** and watch it work.
   Phone App (streams audio)
         │ Webhook
   Percept Receiver (FastAPI, port 8900)
+   ├─ Webhook authentication (Bearer token / URL token)
+   ├─ Speaker authorization gate (allowlist check)
    ├─ Wake word detection (from DB settings)
-   ├─ Intent parser (regex + LLM)
+   ├─ Intent parser (regex + LLM, injection-resistant)
    ├─ Conversation segmentation (3s command / 60s summary)
    ├─ Entity extraction + relationship graph
    ├─ SQLite persistence (conversations, utterances, speakers, actions)
    ├─ LanceDB vector indexing (NVIDIA NIM embeddings)
+   ├─ Security audit log (blocked attempts)
    └─ Action dispatch → OpenClaw / stdout / webhook
         │
   Dashboard (port 8960)
@@ -129,6 +139,11 @@ percept audit                  # Data stats (conversations, utterances, storage)
 percept purge --older-than 90  # Delete old data
 percept config                 # Show configuration
 percept config --set whisper.model_size=small
+percept speakers list          # Show authorized + known speakers
+percept speakers authorize SPEAKER_0  # Authorize a speaker
+percept speakers revoke SPEAKER_0     # Revoke a speaker
+percept config set webhook_secret <token>  # Set webhook auth token
+percept security-log           # View blocked attempts
 ```
 
 > See [CLI Reference](docs/cli-reference.md) for full details.
@@ -167,6 +182,8 @@ Three-tier strategy: **Local (faster-whisper) → NVIDIA (Parakeet NIM) → Clou
 | `actions` | Voice command history with status tracking | Audit |
 | `entity_mentions` | Entity occurrences per conversation | CIL extraction |
 | `relationships` | Weighted entity graph (source, target, type, evidence) | CIL knowledge |
+| `authorized_speakers` | Speaker allowlist for command authorization | Security |
+| `security_log` | Blocked attempts (unauthorized, invalid auth, injection) | Security |
 | `settings` | Runtime config (wake words, timeouts, transcriber) | Config |
 
 ## Percept Protocol
