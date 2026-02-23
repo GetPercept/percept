@@ -292,19 +292,45 @@ def cmd_search(args):
 
 def cmd_config(args):
     """Show or edit config."""
-    cfg = load_config()
+    from src.database import PerceptDB
+    db = PerceptDB()
 
-    if args.set:
-        key, _, value = args.set.partition("=")
+    if args.action == "set" and args.config_args:
+        if len(args.config_args) < 2:
+            print(f"{C.RED}Usage: percept config set <key> <value>{C.RESET}")
+            db.close()
+            return
+        key, value = args.config_args[0], " ".join(args.config_args[1:])
+        # Store in DB settings
+        db.set_setting(key, value)
+        # Mask secrets in output
+        display_val = value[:4] + "***" if "secret" in key.lower() else value
+        print(f"{C.GREEN}✓{C.RESET} Set {C.BOLD}{key}{C.RESET} = {display_val}")
+        db.close()
+        return
+    elif args.action == "get" and args.config_args:
+        key = args.config_args[0]
+        val = db.get_setting(key)
+        if val is not None:
+            display_val = val[:4] + "***" if "secret" in key.lower() else val
+            print(f"{C.BOLD}{key}{C.RESET} = {display_val}")
+        else:
+            print(f"{C.DIM}{key} not set{C.RESET}")
+        db.close()
+        return
+
+    # Also support legacy --set key=value
+    cfg = load_config()
+    if args.legacy_set:
+        key, _, value = args.legacy_set.partition("=")
         if not value:
             print(f"{C.RED}Usage: --set key=value{C.RESET}")
+            db.close()
             return
-        # Support dotted keys like server.port
         parts = key.split(".")
         obj = cfg
         for p in parts[:-1]:
             obj = obj.setdefault(p, {})
-        # Try to parse as int/float/bool
         if value.lower() == "true":
             value = True
         elif value.lower() == "false":
@@ -320,12 +346,114 @@ def cmd_config(args):
         obj[parts[-1]] = value
         save_config(cfg)
         print(f"{C.GREEN}✓{C.RESET} Set {C.BOLD}{key}{C.RESET} = {value}")
+        db.close()
         return
 
-    # Show config
+    # Show all config
     print(f"\n{C.BOLD}{C.CYAN}⚙ Configuration{C.RESET}\n")
     print(f"  {C.DIM}File: {CONFIG_FILE}{C.RESET}\n")
     print(json.dumps(cfg, indent=2))
+
+    # Also show DB settings
+    settings = db.get_all_settings()
+    if settings:
+        print(f"\n  {C.BOLD}DB Settings:{C.RESET}")
+        for k, v in sorted(settings.items()):
+            display_v = v[:4] + "***" if "secret" in k.lower() else v
+            print(f"    {k} = {display_v}")
+    print()
+    db.close()
+
+
+def cmd_speakers(args):
+    """Manage authorized speakers."""
+    from src.database import PerceptDB
+    db = PerceptDB()
+
+    if args.action == "authorize":
+        if not args.speaker_id:
+            print(f"{C.RED}Usage: percept speakers authorize <speaker_id>{C.RESET}")
+            db.close()
+            return
+        speaker_id = args.speaker_id
+        # Check if speaker exists in speakers table
+        speakers = db.get_speakers()
+        known = {s["id"] for s in speakers}
+        if speaker_id not in known:
+            print(f"{C.YELLOW}⚠{C.RESET}  Speaker '{speaker_id}' not in speakers table (will still be authorized)")
+        db.authorize_speaker(speaker_id)
+        name = next((s["name"] for s in speakers if s["id"] == speaker_id), speaker_id)
+        print(f"{C.GREEN}✓{C.RESET} Authorized speaker: {C.BOLD}{speaker_id}{C.RESET} ({name})")
+
+    elif args.action == "revoke":
+        if not args.speaker_id:
+            print(f"{C.RED}Usage: percept speakers revoke <speaker_id>{C.RESET}")
+            db.close()
+            return
+        if db.revoke_speaker(args.speaker_id):
+            print(f"{C.GREEN}✓{C.RESET} Revoked speaker: {C.BOLD}{args.speaker_id}{C.RESET}")
+        else:
+            print(f"{C.YELLOW}⚠{C.RESET}  Speaker '{args.speaker_id}' was not in authorized list")
+
+    elif args.action == "list":
+        authorized = db.get_authorized_speakers()
+        if not authorized:
+            print(f"\n{C.BOLD}{C.CYAN}🔐 Authorized Speakers{C.RESET}\n")
+            print(f"  {C.DIM}No authorized speakers configured (all speakers allowed){C.RESET}")
+            print(f"  {C.DIM}Use 'percept speakers authorize <speaker_id>' to enable allowlist{C.RESET}\n")
+        else:
+            print(f"\n{C.BOLD}{C.CYAN}🔐 Authorized Speakers ({len(authorized)}){C.RESET}\n")
+            for s in authorized:
+                name = s.get("name") or "Unknown"
+                sid = s["speaker_id"]
+                words = s.get("total_words") or 0
+                print(f"  {C.GREEN}●{C.RESET} {C.BOLD}{sid}{C.RESET}  ({name})  {C.DIM}{words} words{C.RESET}")
+            print()
+
+        # Also show all known speakers for reference
+        all_speakers = db.get_speakers()
+        if all_speakers:
+            auth_ids = {s["speaker_id"] for s in authorized}
+            print(f"  {C.BOLD}All known speakers:{C.RESET}")
+            for s in all_speakers:
+                marker = f"{C.GREEN}✓{C.RESET}" if s["id"] in auth_ids else f"{C.DIM}○{C.RESET}"
+                name = s.get("name") or "Unknown"
+                print(f"    {marker} {s['id']}  ({name})  {s.get('total_words', 0)} words")
+            print()
+
+    else:
+        print(f"{C.RED}Unknown action: {args.action}{C.RESET}")
+        print(f"Usage: percept speakers <authorize|revoke|list> [speaker_id]")
+
+    db.close()
+
+
+def cmd_security_log(args):
+    """Show security log."""
+    from src.database import PerceptDB
+    db = PerceptDB()
+    events = db.get_security_log(limit=args.limit, reason=args.reason)
+    db.close()
+
+    if not events:
+        print(f"\n{C.BOLD}{C.CYAN}🛡️  Security Log{C.RESET}\n")
+        print(f"  {C.DIM}No security events recorded.{C.RESET}\n")
+        return
+
+    print(f"\n{C.BOLD}{C.CYAN}🛡️  Security Log ({len(events)} events){C.RESET}\n")
+    for e in events:
+        from datetime import datetime as _dt
+        ts = _dt.fromtimestamp(e["timestamp"]).strftime("%Y-%m-%d %H:%M:%S") if e.get("timestamp") else "?"
+        reason = e.get("reason", "?")
+        color = {
+            "unauthorized_speaker": C.RED,
+            "invalid_webhook_auth": C.MAGENTA,
+            "injection_detected": C.YELLOW,
+        }.get(reason, C.DIM)
+        snippet = (e.get("transcript_snippet") or "")[:80]
+        print(f"  {color}●{C.RESET} {C.DIM}{ts}{C.RESET}  {color}{reason}{C.RESET}  speaker={e.get('speaker_id', '?')}")
+        if snippet:
+            print(f"    {C.DIM}\"{snippet}\"{C.RESET}")
     print()
 
 
@@ -482,8 +610,20 @@ def main():
 
     # config
     p_cfg = sub.add_parser("config", help="Show/edit configuration")
-    p_cfg.add_argument("--set", default=None, metavar="KEY=VALUE")
+    p_cfg.add_argument("action", nargs="?", default=None, choices=["set", "get"], help="set/get a DB setting")
+    p_cfg.add_argument("config_args", nargs="*", default=[], help="key [value]")
+    p_cfg.add_argument("--set", default=None, metavar="KEY=VALUE", dest="legacy_set")
     p_cfg.add_argument("--show", action="store_true")
+
+    # speakers
+    p_spk = sub.add_parser("speakers", help="Manage authorized speakers")
+    p_spk.add_argument("action", choices=["authorize", "revoke", "list"], help="Action")
+    p_spk.add_argument("speaker_id", nargs="?", default=None, help="Speaker ID (e.g. SPEAKER_00)")
+
+    # security-log
+    p_sec = sub.add_parser("security-log", help="Show security event log")
+    p_sec.add_argument("--limit", type=int, default=50)
+    p_sec.add_argument("--reason", default=None, choices=["unauthorized_speaker", "invalid_webhook_auth", "injection_detected"])
 
     # audit
     sub.add_parser("audit", help="Show data stats (conversations, utterances, speakers, etc.)")
@@ -511,6 +651,8 @@ def main():
         "search": cmd_search,
         "audit": cmd_audit,
         "purge": cmd_purge,
+        "speakers": cmd_speakers,
+        "security-log": cmd_security_log,
     }
     cmds[args.command](args)
 
