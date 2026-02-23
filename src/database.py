@@ -145,6 +145,25 @@ class PerceptDB:
                 CREATE INDEX IF NOT EXISTS idx_rel_source ON relationships(source_id);
                 CREATE INDEX IF NOT EXISTS idx_rel_target ON relationships(target_id);
                 CREATE INDEX IF NOT EXISTS idx_rel_type ON relationships(relation_type);
+
+                -- Security: Authorized speakers allowlist
+                CREATE TABLE IF NOT EXISTS authorized_speakers (
+                    speaker_id TEXT PRIMARY KEY,
+                    authorized_at REAL DEFAULT (strftime('%s', 'now')),
+                    authorized_by TEXT DEFAULT 'cli'
+                );
+
+                -- Security: Blocked attempt log
+                CREATE TABLE IF NOT EXISTS security_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp REAL DEFAULT (strftime('%s', 'now')),
+                    speaker_id TEXT,
+                    transcript_snippet TEXT,
+                    reason TEXT NOT NULL,
+                    details TEXT
+                );
+                CREATE INDEX IF NOT EXISTS idx_security_log_ts ON security_log(timestamp);
+                CREATE INDEX IF NOT EXISTS idx_security_log_reason ON security_log(reason);
             """)
 
             # TTL column on conversations (idempotent)
@@ -841,6 +860,74 @@ class PerceptDB:
             db_size = 0
         counts["storage_bytes"] = db_size
         return counts
+
+    # --- Authorized Speakers ---
+
+    def authorize_speaker(self, speaker_id: str, authorized_by: str = "cli"):
+        with self._lock:
+            self._conn.execute("""
+                INSERT OR REPLACE INTO authorized_speakers (speaker_id, authorized_at, authorized_by)
+                VALUES (?, strftime('%s', 'now'), ?)
+            """, (speaker_id, authorized_by))
+            self._conn.commit()
+
+    def revoke_speaker(self, speaker_id: str) -> bool:
+        with self._lock:
+            cur = self._conn.execute("DELETE FROM authorized_speakers WHERE speaker_id = ?", (speaker_id,))
+            self._conn.commit()
+            return cur.rowcount > 0
+
+    def get_authorized_speakers(self) -> list[dict]:
+        with self._lock:
+            rows = self._conn.execute("""
+                SELECT a.speaker_id, a.authorized_at, a.authorized_by,
+                       s.name, s.total_words, s.total_segments
+                FROM authorized_speakers a
+                LEFT JOIN speakers s ON a.speaker_id = s.id
+                ORDER BY a.authorized_at
+            """).fetchall()
+        return [self._row_to_dict(r) for r in rows]
+
+    def is_speaker_authorized(self, speaker_id: str) -> bool:
+        """Check if a speaker is in the authorized allowlist.
+        Returns True if authorized, False otherwise.
+        NOTE: If no speakers are configured, returns True (backward compat).
+        Use has_authorized_speakers() to check if allowlist is active.
+        """
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT 1 FROM authorized_speakers WHERE speaker_id = ?", (speaker_id,)
+            ).fetchone()
+            return row is not None
+
+    def has_authorized_speakers(self) -> bool:
+        """Check if any authorized speakers are configured (allowlist active)."""
+        with self._lock:
+            row = self._conn.execute("SELECT COUNT(*) as c FROM authorized_speakers").fetchone()
+            return row["c"] > 0
+
+    # --- Security Log ---
+
+    def log_security_event(self, speaker_id: str, transcript_snippet: str,
+                           reason: str, details: str = None):
+        with self._lock:
+            self._conn.execute("""
+                INSERT INTO security_log (speaker_id, transcript_snippet, reason, details)
+                VALUES (?, ?, ?, ?)
+            """, (speaker_id, transcript_snippet[:500] if transcript_snippet else None, reason, details))
+            self._conn.commit()
+
+    def get_security_log(self, limit: int = 50, reason: str = None) -> list[dict]:
+        q = "SELECT * FROM security_log"
+        params = []
+        if reason:
+            q += " WHERE reason = ?"
+            params.append(reason)
+        q += " ORDER BY timestamp DESC LIMIT ?"
+        params.append(limit)
+        with self._lock:
+            rows = self._conn.execute(q, params).fetchall()
+        return [self._row_to_dict(r) for r in rows]
 
     # --- Helpers ---
 

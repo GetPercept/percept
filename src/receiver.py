@@ -406,11 +406,22 @@ async def _flush_transcript(session_key: str):
 
     print(f"[FLUSH] ({len(segments)} segments): {full_text[:200]}", flush=True)
 
-    # Check speaker authorization — only approved speakers can trigger actions
+    # Check speaker authorization via DB allowlist
     segment_speakers = set(s.get("speaker", "") for s in segments)
-    approved_speakers = load_speakers()
-    approved_names = {k for k, v in approved_speakers.items() if v.get("is_owner") or v.get("approved")}
-    speaker_authorized = bool(segment_speakers & approved_names) or any(s.get("is_user") for s in segments)
+    if _db.has_authorized_speakers():
+        # Allowlist is active — check each speaker
+        speaker_authorized = any(_db.is_speaker_authorized(spk) for spk in segment_speakers)
+        if not speaker_authorized and any(s.get("is_user") for s in segments):
+            speaker_authorized = True  # Omi's is_user flag = device owner
+        if not speaker_authorized:
+            snippet = full_text[:200]
+            for spk in segment_speakers:
+                _db.log_security_event(spk, snippet, "unauthorized_speaker",
+                                       f"Speakers {segment_speakers} not in allowlist")
+            print(f"[AUTH] Speakers {segment_speakers} not authorized — blocked", flush=True)
+    else:
+        # No allowlist configured — backward compatible, allow all
+        speaker_authorized = True
     if not speaker_authorized:
         print(f"[AUTH] Speakers {segment_speakers} not authorized — logging only", flush=True)
 
@@ -1034,6 +1045,13 @@ async def receive_audio(
     Omi sends: POST /webhook/audio?sample_rate=16000&uid=USER_ID
     Body: raw PCM16 bytes (application/octet-stream)
     """
+    # Webhook authentication
+    auth_error = _check_webhook_auth(request)
+    if auth_error:
+        _db.log_security_event("unknown", f"uid={uid}", auth_error,
+                               "Missing or invalid Authorization header on /webhook/audio")
+        return JSONResponse({"status": "unauthorized"}, status_code=401)
+
     audio_bytes = await request.body()
     if not audio_bytes:
         return JSONResponse({"status": "empty"}, status_code=400)
@@ -1078,6 +1096,18 @@ async def transcript_health():
     return {"status": "ok"}
 
 
+def _check_webhook_auth(request: Request) -> str | None:
+    """Validate webhook Authorization header if webhook_secret is configured.
+    Returns None if OK, or an error reason string if rejected."""
+    secret = _db.get_setting("webhook_secret")
+    if not secret:
+        return None  # No secret configured — allow all
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header == f"Bearer {secret}":
+        return None  # Valid
+    return "invalid_webhook_auth"
+
+
 @app.post("/webhook/transcript")
 async def receive_transcript(
     request: Request,
@@ -1091,6 +1121,14 @@ async def receive_transcript(
     [{"text": "...", "speaker": "SPEAKER_00", "speakerId": 0,
       "is_user": false, "start": 10.0, "end": 15.0}]
     """
+    # Webhook authentication
+    auth_error = _check_webhook_auth(request)
+    if auth_error:
+        _db.log_security_event("unknown", f"uid={uid}", auth_error,
+                               f"Missing or invalid Authorization header")
+        logger.warning(f"[WEBHOOK AUTH] Rejected request from uid={uid}")
+        return JSONResponse({"status": "unauthorized"}, status_code=401)
+
     raw = await request.body()
     print(f"[TRANSCRIPT RAW] {raw[:2000]}", flush=True)
 
@@ -1208,6 +1246,13 @@ async def receive_memory(
 
     Omi sends the full memory object when a conversation is finalized.
     """
+    # Webhook authentication
+    auth_error = _check_webhook_auth(request)
+    if auth_error:
+        _db.log_security_event("unknown", f"uid={uid}", auth_error,
+                               "Missing or invalid Authorization header on /webhook/memory")
+        return JSONResponse({"status": "unauthorized"}, status_code=401)
+
     try:
         memory = await request.json()
     except Exception:
