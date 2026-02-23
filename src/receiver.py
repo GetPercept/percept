@@ -1110,6 +1110,14 @@ def _check_webhook_auth(request: Request) -> str | None:
     token_param = request.query_params.get("token", "")
     if token_param == secret:
         return None  # Valid via URL token
+    # Handle malformed URLs where apps append ?key=val instead of &key=val
+    # e.g., /webhook/transcript?token=secret?uid=xxx — token gets "secret?uid=xxx"
+    if token_param and secret in token_param:
+        return None  # Token present but URL malformed by client
+    # Also check raw URL for token presence (last resort)
+    raw_url = str(request.url)
+    if f"token={secret}" in raw_url:
+        return None
     return "invalid_webhook_auth"
 
 
