@@ -1097,14 +1097,19 @@ async def transcript_health():
 
 
 def _check_webhook_auth(request: Request) -> str | None:
-    """Validate webhook Authorization header if webhook_secret is configured.
+    """Validate webhook auth via Authorization header OR ?token= query param.
     Returns None if OK, or an error reason string if rejected."""
     secret = _db.get_setting("webhook_secret")
     if not secret:
         return None  # No secret configured — allow all
+    # Check Authorization header first
     auth_header = request.headers.get("Authorization", "")
     if auth_header == f"Bearer {secret}":
-        return None  # Valid
+        return None  # Valid via header
+    # Check URL query parameter as fallback (for apps that don't support headers)
+    token_param = request.query_params.get("token", "")
+    if token_param == secret:
+        return None  # Valid via URL token
     return "invalid_webhook_auth"
 
 
