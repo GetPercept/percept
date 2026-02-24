@@ -328,3 +328,4 @@ See [Contributing Guide](docs/contributing.md) for dev setup and PR guidelines.
 <p align="center">
   <em>"Fei-Fei Li gave AI eyes with ImageNet. We're giving AI agents ears."</em>
 </p>
+<!-- mcp-name: io.github.getpercept/percept -->
