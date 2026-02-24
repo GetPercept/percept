@@ -13,9 +13,9 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         TextField("http://localhost:8900/audio", text: $settings.webhookURL)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.plain)
                             .font(.system(.body, design: .monospaced))
-                            .autocapitalization(.none)
+                            .textInputAutocapitalization(.never)
                             .disableAutocorrection(true)
                     }
                     
@@ -24,7 +24,7 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         SecureField("Bearer token (optional)", text: $settings.authToken)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(.plain)
                     }
                 }
                 
@@ -73,7 +73,7 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .automatic) {
                     Button("Done") {
                         // Sync settings to Watch
                         WatchConnectivityManager.shared.sendSettings([

@@ -4,7 +4,7 @@ import WatchConnectivity
 import WatchKit
 
 /// Captures audio on Apple Watch using AVAudioEngine, chunks into 1-second PCM16 buffers
-final class AudioRecorder: ObservableObject {
+final class AudioRecorder: ObservableObject, @unchecked Sendable {
     @Published var isRecording = false
     @Published var audioLevel: Float = 0 // 0...1 normalized for waveform
     

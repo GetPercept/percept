@@ -8,6 +8,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: 57KP67PPR6
+    CODE_SIGN_STYLE: Automatic
 
 targets:
   PerceptCompanion:
@@ -18,23 +20,7 @@ targets:
       - path: Shared
     settings:
       base:
-        INFOPLIST_VALUES: >-
-          PRODUCT_BUNDLE_IDENTIFIER=$(PRODUCT_BUNDLE_IDENTIFIER)
-          UILaunchScreen={}
         PRODUCT_BUNDLE_IDENTIFIER: com.percept.companion
-    info:
-      path: PerceptCompanion/Info.plist
-      properties:
-        CFBundleDisplayName: Percept
-        NSMicrophoneUsageDescription: "Percept needs microphone access to relay audio from Apple Watch."
-        UIBackgroundModes:
-          - audio
-          - processing
-    entitlements:
-      path: PerceptCompanion/PerceptCompanion.entitlements
-      properties:
-        com.apple.security.application-groups:
-          - group.com.percept.watch
 
   PerceptWatch:
     type: application
@@ -42,21 +28,6 @@ targets:
     sources:
       - path: PerceptWatch
       - path: Shared
-    dependencies:
-      - target: PerceptCompanion
-        embed: false
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.percept.companion.watchkitapp
-    info:
-      path: PerceptWatch/Info.plist
-      properties:
-        CFBundleDisplayName: Percept
-        NSMicrophoneUsageDescription: "Percept uses the microphone to capture voice commands for your AI agent."
-        WKApplication: true
-        WKCompanionAppBundleIdentifier: com.percept.companion
-    entitlements:
-      path: PerceptWatch/PerceptWatch.entitlements
-      properties:
-        com.apple.security.application-groups:
-          - group.com.percept.watch

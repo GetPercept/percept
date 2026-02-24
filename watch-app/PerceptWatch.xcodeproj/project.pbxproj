@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		3587C8ECCD689FFCCCB3EBC5 /* PerceptWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 122B031D22DEE15F1530A74F /* PerceptWatchApp.swift */; };
 		419B55918A85F774A82B15F2 /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AB25361ABBB05CAC80699C /* AudioRecorder.swift */; };
-		MOCK00000000000000000001 /* MockAudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = MOCK00000000000000000002 /* MockAudioRecorder.swift */; };
 		4E69575869451C36F894C2CC /* PerceptComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31512C00A8C543E9CECC8B97 /* PerceptComplication.swift */; };
 		635BA9B7703903C38C2BD4C5 /* RecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF08A9F460DFF1332E71CE0 /* RecordingView.swift */; };
 		82CE2F35A96984F4B5EADE79 /* AudioRelayService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B74AD9E98A295961618600 /* AudioRelayService.swift */; };
@@ -17,6 +16,7 @@
 		A74F3BB6146ABD7F3493079B /* PerceptSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6927162EC488CAA8595580B /* PerceptSettings.swift */; };
 		A9FD66FE5F02A23588A46BC7 /* AudioUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00974B3DBAB99E0959AB0F83 /* AudioUploader.swift */; };
 		AA7C8B5C87067476F92AB597 /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137D65C7189B1E1D616D7751 /* WatchConnectivityManager.swift */; };
+		AE940BF22EC428873CA3CD38 /* MockAudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3870B94C57CA6CA9FE950167 /* MockAudioRecorder.swift */; };
 		AF3BB7F4C3C9C190818B7C0B /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8DC0E423AF59301B017B143 /* WaveformView.swift */; };
 		B978930EA424244B765EB3AF /* AudioConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B993F206A2AAF5CDAF2B245 /* AudioConfig.swift */; };
 		C682FA32BCC520D0D2A75136 /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137D65C7189B1E1D616D7751 /* WatchConnectivityManager.swift */; };
@@ -28,16 +28,6 @@
 		F7520822115008BFA8C98F19 /* RaiseToSpeakDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2850E08A128E08DF12D50BD2 /* RaiseToSpeakDetector.swift */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		E6FDB292A9810B9C19781528 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 29F63AB451360B1CCC9B1AA4 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F91D90676EB37A4030082461;
-			remoteInfo = PerceptCompanion;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		00974B3DBAB99E0959AB0F83 /* AudioUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioUploader.swift; sourceTree = "<group>"; };
 		1116CE740AFD9F6F652033D8 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -48,6 +38,7 @@
 		35DC6776568E2C2110CB41A4 /* PerceptCompanion.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = PerceptCompanion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3635A3FEA45F3B05475ABA3D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		37584FDF7CB1039C376B1500 /* PerceptCompanionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerceptCompanionApp.swift; sourceTree = "<group>"; };
+		3870B94C57CA6CA9FE950167 /* MockAudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAudioRecorder.swift; sourceTree = "<group>"; };
 		5FF08A9F460DFF1332E71CE0 /* RecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingView.swift; sourceTree = "<group>"; };
 		6886AFD80A3611148978EC91 /* PerceptWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PerceptWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		76FE1A38F48694C244B70824 /* PerceptWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PerceptWatch.entitlements; sourceTree = "<group>"; };
@@ -57,7 +48,6 @@
 		B8DC0E423AF59301B017B143 /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
 		BFDAB0A724BE50E217D00306 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D9AB25361ABBB05CAC80699C /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
-		MOCK00000000000000000002 /* MockAudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAudioRecorder.swift; sourceTree = "<group>"; };
 		E6927162EC488CAA8595580B /* PerceptSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerceptSettings.swift; sourceTree = "<group>"; };
 		F9B74AD9E98A295961618600 /* AudioRelayService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRelayService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -110,8 +100,8 @@
 			isa = PBXGroup;
 			children = (
 				D9AB25361ABBB05CAC80699C /* AudioRecorder.swift */,
-				MOCK00000000000000000002 /* MockAudioRecorder.swift */,
 				3635A3FEA45F3B05475ABA3D /* Info.plist */,
+				3870B94C57CA6CA9FE950167 /* MockAudioRecorder.swift */,
 				31512C00A8C543E9CECC8B97 /* PerceptComplication.swift */,
 				76FE1A38F48694C244B70824 /* PerceptWatch.entitlements */,
 				122B031D22DEE15F1530A74F /* PerceptWatchApp.swift */,
@@ -134,7 +124,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				3DC7E92BB2FCB2C46692CA1B /* PBXTargetDependency */,
 			);
 			name = PerceptWatch;
 			packageProductDependencies = (
@@ -168,6 +157,16 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					595D49B6CDD3722B6A5C6DE5 = {
+						DevelopmentTeam = 57KP67PPR6;
+						ProvisioningStyle = Automatic;
+					};
+					F91D90676EB37A4030082461 = {
+						DevelopmentTeam = 57KP67PPR6;
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = DF87620B7466B769538ED920 /* Build configuration list for PBXProject "PerceptWatch" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -196,8 +195,8 @@
 			files = (
 				B978930EA424244B765EB3AF /* AudioConfig.swift in Sources */,
 				419B55918A85F774A82B15F2 /* AudioRecorder.swift in Sources */,
-				MOCK00000000000000000001 /* MockAudioRecorder.swift in Sources */,
 				E4CAB1B92A4971148369D176 /* AudioUploader.swift in Sources */,
+				AE940BF22EC428873CA3CD38 /* MockAudioRecorder.swift in Sources */,
 				4E69575869451C36F894C2CC /* PerceptComplication.swift in Sources */,
 				A74F3BB6146ABD7F3493079B /* PerceptSettings.swift in Sources */,
 				3587C8ECCD689FFCCCB3EBC5 /* PerceptWatchApp.swift in Sources */,
@@ -225,24 +224,15 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		3DC7E92BB2FCB2C46692CA1B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = F91D90676EB37A4030082461 /* PerceptCompanion */;
-			targetProxy = E6FDB292A9810B9C19781528 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
 		120F805540D471728AF4BD00 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = PerceptWatch/PerceptWatch.entitlements;
-				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = PerceptWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.percept.companion.watchkitapp;
 				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
 			};
 			name = Release;
@@ -251,11 +241,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = PerceptWatch/PerceptWatch.entitlements;
-				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = PerceptWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.percept.companion.watchkitapp;
 				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
 			};
 			name = Debug;
@@ -264,11 +253,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = PerceptCompanion/PerceptCompanion.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = PerceptCompanion/Info.plist;
-				INFOPLIST_VALUES = "PRODUCT_BUNDLE_IDENTIFIER=$(PRODUCT_BUNDLE_IDENTIFIER) UILaunchScreen={}";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -283,11 +269,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = PerceptCompanion/PerceptCompanion.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = PerceptCompanion/Info.plist;
-				INFOPLIST_VALUES = "PRODUCT_BUNDLE_IDENTIFIER=$(PRODUCT_BUNDLE_IDENTIFIER) UILaunchScreen={}";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -331,8 +314,10 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 57KP67PPR6;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -394,8 +379,10 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 57KP67PPR6;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;

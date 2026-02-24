@@ -4,7 +4,7 @@ import WatchKit
 
 /// Detects wrist raise gesture to auto-trigger recording
 /// Uses CMMotionManager to detect when watch face is oriented toward mouth
-final class RaiseToSpeakDetector: ObservableObject {
+final class RaiseToSpeakDetector: ObservableObject, @unchecked Sendable {
     @Published var isRaised = false
     
     private let motionManager = CMMotionManager()
