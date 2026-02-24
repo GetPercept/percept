@@ -22,7 +22,11 @@
 
 ---
 
+### 🎙️ Ambient Voice Pipeline
 https://github.com/GetPercept/percept/raw/main/demo.mp4
+
+### 🤖 MCP Integration — Claude Desktop
+https://github.com/GetPercept/percept/raw/main/demo-mcp.mov
 
 ---
 
