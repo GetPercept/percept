@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "getpercept"
+version = "0.1.0"
+description = "Ambient voice intelligence for AI agents — give your agent ears"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "GetPercept", email = "hello@getpercept.ai"},
+]
+keywords = ["mcp", "voice", "transcription", "ai-agent", "ambient-intelligence", "context"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "faster-whisper>=1.0.0",
+    "numpy",
+    "mcp>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.20.0",
+]
+nvidia = [
+    "grpcio>=1.60.0",
+    "protobuf>=4.25.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/GetPercept/percept"
+Repository = "https://github.com/GetPercept/percept"
+Documentation = "https://github.com/GetPercept/percept/blob/main/README.md"
+Issues = "https://github.com/GetPercept/percept/issues"
+
+[project.scripts]
+percept = "src.cli:main"
+
+[project.entry-points."mcp.servers"]
+percept = "src.mcp_server:run"
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
