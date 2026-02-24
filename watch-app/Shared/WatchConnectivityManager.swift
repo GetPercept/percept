@@ -2,7 +2,7 @@ import Foundation
 import WatchConnectivity
 
 /// Manages Watch↔iPhone communication via WCSession
-final class WatchConnectivityManager: NSObject, ObservableObject {
+final class WatchConnectivityManager: NSObject, ObservableObject, @unchecked Sendable {
     static let shared = WatchConnectivityManager()
     
     @Published var isReachable = false

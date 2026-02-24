@@ -30,7 +30,7 @@ struct CompanionView: View {
                     }
                 }
                 .padding()
-                .background(Color(.systemGray6))
+                .background(Color.gray.opacity(0.15))
                 .cornerRadius(12)
                 
                 // Error display
@@ -58,7 +58,7 @@ struct CompanionView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(.systemGray6))
+                .background(Color.gray.opacity(0.15))
                 .cornerRadius(8)
                 
                 Spacer()
@@ -66,7 +66,7 @@ struct CompanionView: View {
             .padding()
             .navigationTitle("Percept")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .automatic) {
                     Button(action: { showSettings = true }) {
                         Image(systemName: "gear")
                     }

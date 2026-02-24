@@ -1,7 +1,7 @@
 import Foundation
 
 /// User-configurable settings, stored in UserDefaults with app group sharing
-final class PerceptSettings: ObservableObject {
+final class PerceptSettings: ObservableObject, @unchecked Sendable {
     static let shared = PerceptSettings()
     static let appGroup = "group.com.percept.watch"
     

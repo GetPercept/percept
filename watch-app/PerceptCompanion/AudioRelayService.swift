@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 /// Receives audio chunks from Watch via WatchConnectivity and forwards to Percept API
-final class AudioRelayService: ObservableObject {
+final class AudioRelayService: ObservableObject, @unchecked Sendable {
     @Published var chunksReceived: Int = 0
     @Published var chunksForwarded: Int = 0
     @Published var lastError: String?

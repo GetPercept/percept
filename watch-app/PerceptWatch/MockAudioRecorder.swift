@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 /// Mock recorder for Simulator — generates fake audio levels and sends test data
-final class MockAudioRecorder: ObservableObject {
+final class MockAudioRecorder: ObservableObject, @unchecked Sendable {
     @Published var isRecording = false
     @Published var audioLevel: Float = 0
     
