@@ -355,7 +355,61 @@ Export all data as JSON (conversations, speakers, contacts, actions, relationshi
 
 ## Authentication
 
-> **⚠️ Warning:** Percept currently has **no authentication**. All endpoints are open. Only run on trusted networks or behind a reverse proxy with auth. Authentication is planned for a future release.
+Percept uses **three layers of security** on all inbound endpoints:
+
+### 1. Webhook Token Authentication
+
+All webhook and audio endpoints require a token. Set it with:
+
+```bash
+percept config set webhook_secret YOUR_SECRET_TOKEN
+```
+
+Then authenticate requests using either method:
+
+- **URL parameter:** `POST /webhook/transcript?token=YOUR_SECRET_TOKEN`
+- **Bearer header:** `Authorization: Bearer YOUR_SECRET_TOKEN`
+
+Requests without a valid token receive `401 Unauthorized`.
+
+### 2. Speaker Authorization
+
+Only authorized speakers can trigger voice commands. Manage the allowlist:
+
+```bash
+percept speakers authorize SPEAKER_0    # Add a speaker
+percept speakers revoke SPEAKER_0       # Remove a speaker
+percept speakers list                   # Show all speakers
+```
+
+Unauthorized speakers are logged and their transcripts are recorded but commands are **not executed**.
+
+### 3. Command Safety Classifier
+
+The intent parser includes an injection classifier that blocks attempts to:
+- Exfiltrate credentials or environment variables
+- Execute system commands (SSH, shell access)
+- Dump sensitive data (IP addresses, tokens)
+
+Blocked attempts are logged to the security audit log:
+
+```bash
+percept security-log    # View all blocked attempts
+```
+
+### Dashboard Authentication
+
+The dashboard (port 8960) uses password authentication. Set the password in your config:
+
+```json
+{
+  "dashboard": {
+    "password": "your-dashboard-password"
+  }
+}
+```
+
+> **Recommendation:** Always run Percept behind a reverse proxy (e.g., Cloudflare Tunnel) with HTTPS for production deployments.
 
 ---
 

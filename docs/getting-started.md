@@ -42,7 +42,7 @@ numpy
 5. Set your **Transcript Webhook URL** to:
 
 ```
-https://your-server:8900/webhook/transcript
+https://your-server:8900/webhook/transcript?token=YOUR_SECRET_TOKEN
 ```
 
 > **💡 Tip:** For local development, you'll need a tunnel. See [Cloudflare Tunnel](#cloudflare-tunnel-setup) below.
@@ -57,6 +57,20 @@ python -m src.cli serve
 # Or if installed via pip:
 percept serve
 ```
+
+### Secure Your Instance
+
+Before exposing Percept to the internet, set up authentication:
+
+```bash
+# Set a webhook secret (required for all inbound endpoints)
+percept config set webhook_secret YOUR_SECRET_TOKEN
+
+# Authorize your speaker (use your Omi speaker label)
+percept speakers authorize SPEAKER_0
+```
+
+Append `?token=YOUR_SECRET_TOKEN` to your Omi webhook URL, or use `Authorization: Bearer YOUR_SECRET_TOKEN` header. See [API Reference — Authentication](api-reference.md#authentication) for details.
 
 You should see:
 
