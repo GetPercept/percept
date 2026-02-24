@@ -21,6 +21,19 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.percept.companion
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+    info:
+      path: PerceptCompanion/Info.plist
+      properties:
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UILaunchScreen: {}
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.percept.companion.refresh
 
   PerceptWatch:
     type: application
