@@ -413,4 +413,50 @@ The dashboard (port 8960) uses password authentication. Set the password in your
 
 ---
 
+## MCP Tools (Model Context Protocol)
+
+Percept includes a built-in MCP server (`src/mcp_server.py`) that exposes all capabilities as Claude-native tools.
+
+### Starting the MCP Server
+
+```bash
+percept mcp                    # Via CLI
+python -m src.mcp_server       # Standalone
+```
+
+### Tools
+
+#### `percept_search(query: str, limit: int = 10) → JSON`
+Full-text search across utterances (FTS5) with fallback to conversation-level search. Supports FTS5 syntax (AND, OR, NOT, phrases).
+
+#### `percept_transcripts(today_only: bool = False, limit: int = 20) → JSON`
+List recent transcripts with metadata (date, speakers, word count, summary, preview).
+
+#### `percept_actions(limit: int = 20) → JSON`
+List voice command history with intent, parameters, status, and execution results.
+
+#### `percept_speakers() → JSON`
+List all known speakers with word counts, segment counts, activity timestamps, and authorization status.
+
+#### `percept_status() → JSON`
+Pipeline health check: server status, live stream status, today's stats, database audit.
+
+#### `percept_security_log(limit: int = 20) → JSON`
+View blocked attempts — unauthorized speakers, invalid webhook auth, injection detection.
+
+#### `percept_conversations(limit: int = 20) → JSON`
+List conversations with summaries, durations, speakers, and topics.
+
+#### `percept_listen(limit: int = 50) → JSON`
+Get latest live transcript events from the real-time stream file.
+
+### Resources
+
+| URI | Description |
+|-----|-------------|
+| `percept://status` | Current pipeline status (JSON) |
+| `percept://speakers` | Known speakers list (JSON) |
+
+---
+
 Next: [Architecture](architecture.md) | [Percept Protocol](percept-protocol.md)

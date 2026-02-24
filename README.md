@@ -148,6 +148,49 @@ percept security-log           # View blocked attempts
 
 > See [CLI Reference](docs/cli-reference.md) for full details.
 
+## MCP Server (Claude Desktop / Anthropic Ecosystem)
+
+Percept exposes all capabilities as MCP (Model Context Protocol) tools, so Claude can natively search your conversations, check transcripts, and more.
+
+```bash
+# Start MCP server (stdio transport)
+percept mcp
+```
+
+### Claude Desktop Configuration
+
+Add to `~/.config/claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "percept": {
+      "command": "python",
+      "args": ["-m", "src.mcp_server"],
+      "cwd": "/path/to/percept"
+    }
+  }
+}
+```
+
+### Available MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `percept_search` | Full-text search across conversations |
+| `percept_transcripts` | List recent transcripts |
+| `percept_actions` | Voice command history |
+| `percept_speakers` | Known speakers with word counts |
+| `percept_status` | Pipeline health check |
+| `percept_security_log` | Blocked attempts log |
+| `percept_conversations` | Conversations with summaries |
+| `percept_listen` | Live transcript stream |
+
+### MCP Resources
+
+- `percept://status` — Current pipeline status
+- `percept://speakers` — Known speakers list
+
 ## Dashboard
 
 The web dashboard runs on port 8960 and provides:

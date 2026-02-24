@@ -634,6 +634,9 @@ def main():
     # audit
     sub.add_parser("audit", help="Show data stats (conversations, utterances, speakers, etc.)")
 
+    # mcp
+    sub.add_parser("mcp", help="Start MCP server (Model Context Protocol) for Claude Desktop")
+
     # purge
     p_purge = sub.add_parser("purge", help="Purge data")
     p_purge.add_argument("--older-than", type=int, default=None, metavar="DAYS", help="Delete conversations older than N days")
@@ -659,6 +662,7 @@ def main():
         "purge": cmd_purge,
         "speakers": cmd_speakers,
         "security-log": cmd_security_log,
+        "mcp": lambda _: __import__("src.mcp_server", fromlist=["run"]).run(),
     }
     cmds[args.command](args)
 

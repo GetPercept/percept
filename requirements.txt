@@ -2,5 +2,6 @@ fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 faster-whisper>=1.0.0
 numpy
+mcp>=1.0.0
 pytest>=7.0.0
 pytest-asyncio>=0.20.0
