@@ -99,7 +99,7 @@ async def login_page():
     pw = _get_dashboard_password()
     if not pw:
         return RedirectResponse("/", status_code=302)
-    return HTMLResponse(LOGIN_HTML.format(error=""))
+    return HTMLResponse(LOGIN_HTML.replace("{error}", ""))
 
 
 @app.post("/login")
@@ -114,7 +114,7 @@ async def login_submit(request: Request):
         response = RedirectResponse("/", status_code=302)
         response.set_cookie(_COOKIE_NAME, token, httponly=True, samesite="lax", max_age=86400 * 7)
         return response
-    return HTMLResponse(LOGIN_HTML.format(error='<p class="error">Invalid password</p>'))
+    return HTMLResponse(LOGIN_HTML.replace("{error}", '<p class="error">Invalid password</p>'))
 
 
 @app.get("/logout")
