@@ -159,19 +159,20 @@ percept mcp
 
 ### Claude Desktop Configuration
 
-Add to `~/.config/claude/claude_desktop_config.json`:
+Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
 ```json
 {
   "mcpServers": {
     "percept": {
-      "command": "python",
-      "args": ["-m", "src.mcp_server"],
-      "cwd": "/path/to/percept"
+      "command": "/path/to/percept/.venv/bin/python",
+      "args": ["/path/to/percept/run_mcp.py"]
     }
   }
 }
 ```
+
+> Restart Claude Desktop after editing. The Percept tools will appear automatically.
 
 ### Available MCP Tools
 
