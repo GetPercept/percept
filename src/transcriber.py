@@ -28,11 +28,13 @@ class Conversation:
 
     @property
     def full_text(self) -> str:
+        """Return the full concatenated transcript text."""
         return " ".join(s.text.strip() for s in self.segments)
 
 
 class Transcriber:
     def __init__(self, config: dict):
+        """Initialize TranscriptionResult with segments and metadata."""
         cfg = config["whisper"]
         self.model = WhisperModel(
             cfg["model_size"],

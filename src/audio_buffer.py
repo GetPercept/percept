@@ -29,10 +29,12 @@ class AudioBufferManager:
     """Buffers audio chunks by sessionId; triggers callback after silence."""
 
     def __init__(self, on_complete: Callable[[str, bytes], Awaitable[None]]):
+        """Initialize AudioBufferManager."""
         self._sessions: dict[str, AudioSession] = {}
         self._on_complete = on_complete
 
     def _get_or_create(self, session_id: str) -> AudioSession:
+        """Get or create an audio buffer session for the given key."""
         if session_id not in self._sessions:
             self._sessions[session_id] = AudioSession(session_id=session_id)
         return self._sessions[session_id]
@@ -98,9 +100,11 @@ class AudioBufferManager:
 
     @property
     def active_sessions(self) -> int:
+        """Return the number of active audio buffer sessions."""
         return len(self._sessions)
 
     def get_session_info(self, session_id: str) -> dict | None:
+        """Return info dict for a session, or None if not found."""
         session = self._sessions.get(session_id)
         if not session:
             return None

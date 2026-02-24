@@ -57,6 +57,7 @@ C.strip()
 # ── Helpers ────────────────────────────────────────────────────────────
 
 def load_config() -> dict:
+    """Load Percept YAML configuration from the default path."""
     if CONFIG_FILE.exists():
         with open(CONFIG_FILE) as f:
             return json.load(f)
@@ -64,12 +65,14 @@ def load_config() -> dict:
 
 
 def save_config(cfg: dict):
+    """Save configuration dict to the YAML config file."""
     CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(CONFIG_FILE, "w") as f:
         json.dump(cfg, f, indent=2)
 
 
 def check_health(port: int = 8900) -> dict | None:
+    """Check if the Percept server is running and healthy."""
     try:
         resp = urlopen(f"http://localhost:{port}/health", timeout=2)
         return json.loads(resp.read())
@@ -78,6 +81,7 @@ def check_health(port: int = 8900) -> dict | None:
 
 
 def count_words_in_file(path: Path) -> int:
+    """Count the number of words in a text file."""
     try:
         return len(path.read_text().split())
     except Exception:
@@ -85,6 +89,7 @@ def count_words_in_file(path: Path) -> int:
 
 
 def format_duration(seconds: float) -> str:
+    """Format seconds into a human-readable duration string."""
     if seconds < 60:
         return f"{seconds:.0f}s"
     elif seconds < 3600:
@@ -570,6 +575,7 @@ def cmd_purge(args):
 # ── Main ───────────────────────────────────────────────────────────────
 
 def main():
+    """Main entry point for the Percept CLI."""
     parser = argparse.ArgumentParser(
         prog="percept",
         description="Percept — ambient voice intelligence pipeline",

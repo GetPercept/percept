@@ -15,6 +15,7 @@ NVIDIA_ENDPOINT = "https://integrate.api.nvidia.com/v1/embeddings"
 
 
 def _load_nvidia_key(path: Path = NVIDIA_CREDS_PATH) -> Optional[str]:
+    """Load NVIDIA API key from credentials JSON file."""
     try:
         with open(path) as f:
             data = json.load(f)
@@ -26,6 +27,7 @@ def _load_nvidia_key(path: Path = NVIDIA_CREDS_PATH) -> Optional[str]:
 class PerceptVectorStore:
     def __init__(self, db_path: str = None, nvidia_api_key: str = None,
                  model: str = DEFAULT_MODEL, chunk_size: int = 500, chunk_overlap: int = 50):
+        """Initialize vector store with LanceDB backend and NVIDIA embeddings."""
         import lancedb
 
         if db_path is None:
@@ -120,6 +122,7 @@ class PerceptVectorStore:
     # ── Table management ────────────────────────────────────────────
 
     def _get_table(self):
+        """Open and return the LanceDB table, or None if it doesn't exist."""
         try:
             return self._db.open_table(self._table_name)
         except Exception:

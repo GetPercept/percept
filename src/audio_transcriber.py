@@ -26,6 +26,7 @@ class AudioTranscriber:
     """Transcribe raw PCM16 audio using faster-whisper."""
 
     def __init__(self, model_size: str = "base", device: str = "auto", compute_type: str = "int8"):
+        """Initialize AudioTranscriber with the specified transcription backend."""
         logger.info(f"Loading whisper model: {model_size} (device={device}, compute={compute_type})")
         self._model = WhisperModel(model_size, device=device, compute_type=compute_type)
 

@@ -52,6 +52,7 @@ _audio_transcriber = None  # lazy init to avoid loading model at import time
 
 
 def _get_audio_transcriber() -> AudioTranscriber:
+    """Get or create the singleton AudioTranscriber instance."""
     global _audio_transcriber
     if _audio_transcriber is None:
         _audio_transcriber = AudioTranscriber(
@@ -64,6 +65,7 @@ _wake_words_cache = None
 _wake_words_last_load = 0
 
 def _get_wake_words():
+    """Get the list of active wake words from settings."""
     global _wake_words_cache, _wake_words_last_load
     now = time.time()
     if _wake_words_cache is None or (now - _wake_words_last_load) > 60:
@@ -126,6 +128,7 @@ CONTACTS_FILE = Path(__file__).parent.parent / "data" / "contacts.json"
 
 
 def _load_contacts() -> dict:
+    """Load contacts from the database for name resolution."""
     try:
         with open(CONTACTS_FILE) as f:
             return json.load(f)
@@ -1177,6 +1180,7 @@ async def receive_audio_chunks(request: Request):
 
 @app.get("/health")
 async def health():
+    """Health check endpoint returning server status."""
     return {
         "status": "ok",
         "service": "percept",

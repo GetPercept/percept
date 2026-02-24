@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class PerceptDB:
     def __init__(self, db_path: str = None):
+        """Initialize PerceptDB and create tables if needed."""
         if db_path is None:
             db_path = str(Path(__file__).parent.parent / "data" / "percept.db")
         Path(db_path).parent.mkdir(parents=True, exist_ok=True)
@@ -27,6 +28,7 @@ class PerceptDB:
         self._create_tables()
 
     def _create_tables(self):
+        """Create all SQLite tables and indexes if they don't exist."""
         with self._lock:
             c = self._conn
             c.executescript("""
@@ -224,6 +226,7 @@ class PerceptDB:
     }
 
     def _init_default_settings(self):
+        """Insert default settings if not already present."""
         with self._lock:
             for key, value in self.SETTING_DEFAULTS.items():
                 self._conn.execute(
@@ -232,6 +235,7 @@ class PerceptDB:
             self._conn.commit()
 
     def get_setting(self, key: str, default=None) -> str | None:
+        """Get a setting value by key, or default if not found."""
         with self._lock:
             row = self._conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
         if row:
@@ -239,6 +243,7 @@ class PerceptDB:
         return default
 
     def set_setting(self, key: str, value: str):
+        """Set a setting key-value pair (insert or update)."""
         with self._lock:
             self._conn.execute("""
                 INSERT INTO settings (key, value, updated_at) VALUES (?, ?, strftime('%s', 'now'))
@@ -247,11 +252,13 @@ class PerceptDB:
             self._conn.commit()
 
     def get_all_settings(self) -> dict:
+        """Return all settings as a dict."""
         with self._lock:
             rows = self._conn.execute("SELECT key, value FROM settings").fetchall()
         return {r["key"]: r["value"] for r in rows}
 
     def delete_setting(self, key: str) -> bool:
+        """Delete a setting by key."""
         with self._lock:
             cur = self._conn.execute("DELETE FROM settings WHERE key = ?", (key,))
             self._conn.commit()
@@ -265,6 +272,7 @@ class PerceptDB:
                           topics: list = None, transcript: str = None,
                           summary: str = None, file_path: str = None,
                           summary_file_path: str = None):
+        """Save a conversation record to the database."""
         with self._lock:
             self._conn.execute("""
                 INSERT INTO conversations (id, timestamp, date, duration_seconds, segment_count,
@@ -287,6 +295,7 @@ class PerceptDB:
             self._conn.commit()
 
     def get_conversations(self, date: str = None, limit: int = 50, search: str = None) -> list[dict]:
+        """Get conversations with optional date, speaker, and topic filters."""
         q = "SELECT * FROM conversations"
         params = []
         clauses = []
@@ -306,6 +315,7 @@ class PerceptDB:
         return [self._row_to_dict(r) for r in rows]
 
     def get_conversation(self, id: str) -> dict | None:
+        """Get a single conversation by ID."""
         with self._lock:
             row = self._conn.execute("SELECT * FROM conversations WHERE id = ?", (id,)).fetchone()
         return self._row_to_dict(row) if row else None
@@ -315,6 +325,7 @@ class PerceptDB:
     def save_action(self, conversation_id: str = None, intent: str = "",
                     params: dict = None, raw_text: str = None,
                     status: str = "pending") -> str:
+        """Save a dispatched action record."""
         action_id = str(uuid.uuid4())
         with self._lock:
             self._conn.execute("""
@@ -326,6 +337,7 @@ class PerceptDB:
         return action_id
 
     def update_action_status(self, action_id: str, status: str, result: str = None):
+        """Update the status and result of an action."""
         with self._lock:
             self._conn.execute("""
                 UPDATE actions SET status = ?, result = ?, executed_at = ? WHERE id = ?
@@ -333,6 +345,7 @@ class PerceptDB:
             self._conn.commit()
 
     def get_actions(self, status: str = None, limit: int = 50) -> list[dict]:
+        """Get actions with optional status and type filters."""
         if status:
             rows = self._conn.execute(
                 "SELECT * FROM actions WHERE status = ? ORDER BY timestamp DESC LIMIT ?",
@@ -345,12 +358,14 @@ class PerceptDB:
     # --- Speakers ---
 
     def get_speakers(self) -> list[dict]:
+        """Return all known speakers."""
         with self._lock:
             rows = self._conn.execute("SELECT * FROM speakers ORDER BY total_words DESC").fetchall()
         return [self._row_to_dict(r) for r in rows]
 
     def update_speaker(self, speaker_id: str, name: str = None, relationship: str = None,
                        words_delta: int = 0, segments_delta: int = 0):
+        """Update or insert a speaker's profile and auth level."""
         now = time.time()
         with self._lock:
             existing = self._conn.execute("SELECT * FROM speakers WHERE id = ?", (speaker_id,)).fetchone()
@@ -379,6 +394,7 @@ class PerceptDB:
             self._conn.commit()
 
     def get_speaker_stats(self) -> list[dict]:
+        """Get aggregated speaker statistics."""
         with self._lock:
             rows = self._conn.execute("""
                 SELECT id, name, total_words, total_segments, first_seen, last_seen, relationship
@@ -389,6 +405,7 @@ class PerceptDB:
     # --- Entity Mentions ---
 
     def save_entity_mention(self, conversation_id: str, entity_type: str, entity_name: str):
+        """Save an entity mention linked to a conversation."""
         with self._lock:
             try:
                 self._conn.execute("""
@@ -401,6 +418,7 @@ class PerceptDB:
                 pass
 
     def search_entities(self, query: str) -> list[dict]:
+        """Search entity mentions by name pattern."""
         with self._lock:
             rows = self._conn.execute("""
                 SELECT * FROM entity_mentions WHERE entity_name LIKE ?
@@ -411,6 +429,7 @@ class PerceptDB:
     # --- Analytics ---
 
     def get_analytics(self, period: str = "today") -> dict:
+        """Get analytics summary for a date range."""
         import datetime as dt
         now = dt.datetime.now()
         if period == "today":
@@ -448,6 +467,7 @@ class PerceptDB:
     # --- Context ---
 
     def get_recent_context(self, minutes: int = 30) -> list[dict]:
+        """Get recent conversation context within the last N minutes."""
         cutoff = time.time() - (minutes * 60)
         with self._lock:
             rows = self._conn.execute("""
@@ -461,6 +481,7 @@ class PerceptDB:
 
     def save_contact(self, id: str, name: str, email: str = None, phone: str = None,
                      relationship: str = None):
+        """Save or update a contact record."""
         with self._lock:
             self._conn.execute("""
                 INSERT INTO contacts (id, name, email, phone, relationship)
@@ -473,11 +494,13 @@ class PerceptDB:
             self._conn.commit()
 
     def get_contacts(self) -> list[dict]:
+        """Return all contacts."""
         with self._lock:
             rows = self._conn.execute("SELECT * FROM contacts ORDER BY name").fetchall()
         return [self._row_to_dict(r) for r in rows]
 
     def delete_contact(self, id: str):
+        """Delete a contact by ID."""
         with self._lock:
             self._conn.execute("DELETE FROM contacts WHERE id = ?", (id,))
             self._conn.commit()
@@ -687,6 +710,7 @@ class PerceptDB:
     def save_utterance(self, id: str, conversation_id: str, speaker_id: str,
                        text: str, started_at: float, ended_at: float,
                        confidence: float = None, is_command: bool = False):
+        """Save a transcript utterance to the database."""
         with self._lock:
             self._conn.execute("""
                 INSERT INTO utterances (id, conversation_id, speaker_id, text, started_at, ended_at, confidence, is_command)
@@ -724,6 +748,7 @@ class PerceptDB:
         return [self._row_to_dict(r) for r in rows]
 
     def get_utterances(self, conversation_id: str) -> list[dict]:
+        """Get utterances with optional conversation and speaker filters."""
         with self._lock:
             rows = self._conn.execute(
                 "SELECT * FROM utterances WHERE conversation_id = ? ORDER BY started_at",
@@ -734,6 +759,7 @@ class PerceptDB:
 
     def save_relationship(self, source_id: str, target_id: str, relation_type: str,
                           evidence: str = None) -> str:
+        """Save or update a relationship between two entities."""
         now = time.time()
         # Check for existing relationship
         with self._lock:
@@ -769,6 +795,7 @@ class PerceptDB:
                     return None
 
     def get_relationships(self, entity_id: str = None, relation_type: str = None) -> list[dict]:
+        """Get relationships with optional entity and type filters."""
         q = "SELECT * FROM relationships"
         params = []
         clauses = []
@@ -786,6 +813,7 @@ class PerceptDB:
         return [self._row_to_dict(r) for r in rows]
 
     def update_relationship_weight(self, rel_id: str, weight_delta: float):
+        """Update a relationship's weight and increment interaction count."""
         with self._lock:
             self._conn.execute(
                 "UPDATE relationships SET weight = MAX(0, weight + ?) WHERE id = ?",
@@ -820,6 +848,7 @@ class PerceptDB:
         return len(ids)
 
     def purge_older_than(self, days: int) -> int:
+        """Delete conversations and related data older than N days."""
         cutoff = time.time() - (days * 86400)
         with self._lock:
             cur = self._conn.execute(
@@ -831,6 +860,7 @@ class PerceptDB:
         return len(ids)
 
     def purge_conversation(self, conversation_id: str):
+        """Delete a specific conversation and all related records."""
         with self._lock:
             self._purge_conversation_inner(conversation_id)
             self._conn.commit()
@@ -864,6 +894,7 @@ class PerceptDB:
     # --- Authorized Speakers ---
 
     def authorize_speaker(self, speaker_id: str, authorized_by: str = "cli"):
+        """Grant a speaker the specified authorization level."""
         with self._lock:
             self._conn.execute("""
                 INSERT OR REPLACE INTO authorized_speakers (speaker_id, authorized_at, authorized_by)
@@ -872,12 +903,14 @@ class PerceptDB:
             self._conn.commit()
 
     def revoke_speaker(self, speaker_id: str) -> bool:
+        """Revoke a speaker's authorization."""
         with self._lock:
             cur = self._conn.execute("DELETE FROM authorized_speakers WHERE speaker_id = ?", (speaker_id,))
             self._conn.commit()
             return cur.rowcount > 0
 
     def get_authorized_speakers(self) -> list[dict]:
+        """Return all speakers with 'owner' or 'trusted' auth level."""
         with self._lock:
             rows = self._conn.execute("""
                 SELECT a.speaker_id, a.authorized_at, a.authorized_by,
@@ -910,6 +943,7 @@ class PerceptDB:
 
     def log_security_event(self, speaker_id: str, transcript_snippet: str,
                            reason: str, details: str = None):
+        """Log a security event (auth failure, blocked command, etc.)."""
         with self._lock:
             self._conn.execute("""
                 INSERT INTO security_log (speaker_id, transcript_snippet, reason, details)
@@ -918,6 +952,7 @@ class PerceptDB:
             self._conn.commit()
 
     def get_security_log(self, limit: int = 50, reason: str = None) -> list[dict]:
+        """Get recent security events, optionally filtered by event type."""
         q = "SELECT * FROM security_log"
         params = []
         if reason:
@@ -933,6 +968,7 @@ class PerceptDB:
 
     @staticmethod
     def _row_to_dict(row: sqlite3.Row) -> dict:
+        """Convert a sqlite3.Row to a plain dict."""
         d = dict(row)
         # Parse JSON fields
         for k in ("speakers", "topics", "params", "keywords"):
@@ -944,4 +980,5 @@ class PerceptDB:
         return d
 
     def close(self):
+        """Close the database connection."""
         self._conn.close()

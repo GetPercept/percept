@@ -36,6 +36,7 @@ class FlushManager:
 
     def __init__(self, wake_words_fn, on_flush, silence_timeout=SILENCE_TIMEOUT,
                  command_timeout=COMMAND_TIMEOUT, continuation_window=WAKE_CONTINUATION_WINDOW):
+        """Initialize FlushManager with timing and callback configuration."""
         self.wake_words_fn = wake_words_fn
         self.on_flush = on_flush
         self.silence_timeout = silence_timeout
