@@ -117,13 +117,14 @@ class TestAudioBufferManager:
 
 class TestAudioEndpoint:
     @pytest.fixture
-    def client(self):
-        """Create test client with mocked auth."""
+    def client(self, db, monkeypatch):
+        """Create test client with mocked auth (uses in-memory DB)."""
         from fastapi.testclient import TestClient
-        from src.receiver import app, _db
-        # Set a webhook secret for testing
-        _db.set_setting("webhook_secret", "test-token-123")
-        return TestClient(app)
+        import src.receiver as receiver_mod
+        # Use in-memory DB so we don't corrupt production settings
+        monkeypatch.setattr(receiver_mod, "_db", db)
+        db.set_setting("webhook_secret", "test-token-123")
+        return TestClient(receiver_mod.app)
 
     def _make_multipart(self, session_id="s1", seq=0, audio_bytes=None, token="test-token-123"):
         if audio_bytes is None:
