@@ -25,6 +25,7 @@ class ContextEngine:
     """Assembles context packets for agent actions."""
 
     def __init__(self, db: PerceptDB, vector_store=None):
+        """Initialize ContextEngine with database and vector store."""
         self.db = db
         self.vector_store = vector_store
         self.entity_extractor = EntityExtractor(db=db)

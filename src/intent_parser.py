@@ -190,6 +190,7 @@ class IntentParser:
     """Two-tier intent parser: fast regex first, LLM fallback second."""
 
     def __init__(self, llm_enabled: bool = True, llm_model: str = ""):
+        """Initialize IntentParser with optional LLM and vector store config."""
         self.llm_enabled = llm_enabled
         self.llm_model = llm_model
         self._cache: dict[str, tuple[str, float]] = {}  # text -> (result, timestamp)
@@ -197,6 +198,7 @@ class IntentParser:
         self._vector_store = None
 
     def _get_vector_store(self):
+        """Get or create the singleton PerceptVectorStore instance."""
         if self._vector_store is None:
             try:
                 from src.vector_store import PerceptVectorStore
@@ -240,6 +242,7 @@ class IntentParser:
         return f"VOICE: {text}"
 
     def _get_context_text(self, context_segments: list) -> str:
+        """Build context text from recent conversations for LLM prompt."""
         if not context_segments:
             return ""
         return " ".join(s.get("text", "") for s in context_segments[-5:]).strip()
@@ -335,6 +338,7 @@ class IntentParser:
         return None
 
     def _parse_email(self, m: re.Match, cmd_lower: str, context_text: str) -> ParseResult:
+        """Parse email intent fields (to, subject, body) from text."""
         _lookup_contact, _normalize_spoken_email, _ = _lazy_receiver()
         rest = m.group(1).strip()
         # Check if pattern has explicit "about" group
@@ -361,6 +365,7 @@ class IntentParser:
         return ParseResult(intent="email", params={"to": to_addr, "subject": subject, "body": body}, raw_text=cmd_lower)
 
     def _parse_text(self, m: re.Match, cmd_lower: str, context_text: str, pattern: str) -> ParseResult:
+        """Parse text/SMS intent fields (to, message) from text."""
         _lookup_contact, _, _ = _lazy_receiver()
         rest = m.group(1).strip()
 
@@ -407,6 +412,7 @@ class IntentParser:
         return ParseResult(intent="text", params={"to": to, "message": message}, raw_text=cmd_lower)
 
     def _parse_reminder(self, m: re.Match, cmd_lower: str, context_text: str, pattern_index: int) -> ParseResult:
+        """Parse reminder intent fields (text, time, recurrence) from text."""
         task = ""
         when = ""
 
@@ -456,6 +462,7 @@ class IntentParser:
         return ParseResult(intent="reminder", params=params, raw_text=cmd_lower)
 
     def _parse_calendar(self, m: re.Match, cmd_lower: str, context_text: str, pattern: str) -> ParseResult:
+        """Parse calendar event fields (title, date, time, duration) from text."""
         if 'meeting' in pattern:
             event = f"meeting with {m.group(1).strip()}"
             with_person = m.group(1).strip()

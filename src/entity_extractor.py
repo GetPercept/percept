@@ -48,6 +48,7 @@ class EntityExtractor:
     """Two-pass entity extraction with resolution."""
 
     def __init__(self, db=None, llm_enabled: bool = False):
+        """Initialize EntityExtractor with spaCy model and custom patterns."""
         self.db = db
         self.llm_enabled = llm_enabled
         self._cache: dict[str, list[dict]] = {}  # text_hash -> entities

@@ -205,13 +205,15 @@ class TestFastAPIEndpoints:
         assert resp.status_code == 200
 
     def test_transcript_post_empty(self, client):
-        resp = client.post("/webhook/transcript?uid=test", json=[])
-        assert resp.status_code == 200
+        with patch("src.receiver._check_webhook_auth", return_value=None):
+            resp = client.post("/webhook/transcript?uid=test", json=[])
+            assert resp.status_code == 200
 
     def test_transcript_post_segments(self, client):
         segments = [{"text": "Hello world", "speaker": "SPEAKER_00", "is_user": True, "start": 0.0, "end": 2.0}]
-        with patch("src.receiver._schedule_flush", new_callable=AsyncMock):
-            with patch("src.receiver._schedule_conversation_end", new_callable=AsyncMock):
-                resp = client.post("/webhook/transcript?uid=test&session_id=s1", json=segments)
-                assert resp.status_code == 200
-                assert resp.json()["segments_received"] == 1
+        with patch("src.receiver._check_webhook_auth", return_value=None):
+            with patch("src.receiver._schedule_flush", new_callable=AsyncMock):
+                with patch("src.receiver._schedule_conversation_end", new_callable=AsyncMock):
+                    resp = client.post("/webhook/transcript?uid=test&session_id=s1", json=segments)
+                    assert resp.status_code == 200
+                    assert resp.json()["segments_received"] == 1
