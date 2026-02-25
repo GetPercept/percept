@@ -72,8 +72,9 @@ Say **"Hey Jarvis, remind me to check email"** and watch it work.
 - 🔐 **Speaker Authorization** — Allowlist of authorized speakers. Only approved voices trigger commands
 - 🔑 **Webhook Authentication** — Bearer token or URL token (`?token=`) on all webhook endpoints
 - 📋 **Security Audit Log** — All blocked attempts logged with timestamp, speaker, transcript snippet, and reason
-- 🛡️ **Injection Resistant** — Intent parser rejects prompt injection attempts (credential exfiltration, system commands, data leaks)
+- 🛡️ **Command Safety Classifier** — 6-category pattern matching blocks exfiltration, credential access, destructive commands, network changes, info leaks, and prompt injection. Pen tested: 7/7 attacks blocked
 - 🏠 **Local-First** — Audio and transcripts never leave your machine. No cloud dependency
+- 📖 **[Full security documentation →](SECURITY.md)**
 
 ### Intent Parser
 - 🏎️ **Two-Tier Hybrid** — Fast regex (handles ~80% of commands instantly) + LLM fallback
