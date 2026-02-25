@@ -108,6 +108,20 @@ Say **"Hey Jarvis, remind me to check email"** and watch it work.
    └─ Data export + purge
 ```
 
+## Integrations
+
+### Granola Meeting Notes
+
+Import your [Granola](https://granola.ai) meeting notes into Percept's searchable knowledge base:
+
+```bash
+python tools/granola_import.py
+```
+
+Reads from `~/Library/Application Support/Granola/cache-v3.json`, maps documents + transcripts into Percept's conversations table. Your Omi ambient audio and Granola structured notes become one unified, searchable knowledge base — all queryable through the MCP tools.
+
+Supports `--since 2026-02-01`, `--dry-run`, and Enterprise API mode (`GRANOLA_API_KEY`).
+
 ## Supported Hardware
 
 | Device | Status | Notes |
