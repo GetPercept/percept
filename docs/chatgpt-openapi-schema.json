@@ -1,0 +1,735 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Percept \u2014 Voice Intelligence for AI",
+    "description": "Search and query your meeting transcripts, voice commands, speakers, and conversation history captured by Percept. Connect this to any Custom GPT to give ChatGPT access to your real-world conversations.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://percept.clawdoor.com",
+      "description": "Percept API"
+    }
+  ],
+  "paths": {
+    "/api/search": {
+      "get": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Search Conversations",
+        "description": "Search all captured conversations for specific topics, names, or phrases.",
+        "operationId": "search_conversations_api_search_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Search query (FTS5 syntax: AND, OR, NOT, phrases)",
+              "title": "Q"
+            },
+            "description": "Search query (FTS5 syntax: AND, OR, NOT, phrases)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transcripts": {
+      "get": {
+        "tags": [
+          "Transcripts"
+        ],
+        "summary": "List Transcripts",
+        "description": "List recent conversation transcripts with metadata.",
+        "operationId": "list_transcripts_api_transcripts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "today_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Only return today's transcripts",
+              "default": false,
+              "title": "Today Only"
+            },
+            "description": "Only return today's transcripts"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/speakers": {
+      "get": {
+        "tags": [
+          "Speakers"
+        ],
+        "summary": "List Speakers",
+        "description": "List all known speakers with activity stats.",
+        "operationId": "list_speakers_api_speakers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpeakersResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/entities": {
+      "get": {
+        "tags": [
+          "Entities"
+        ],
+        "summary": "List Entities",
+        "description": "List extracted entities (people, companies, topics) from conversations.",
+        "operationId": "list_entities_api_entities_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter entities by name",
+              "title": "Q"
+            },
+            "description": "Filter entities by name"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntitiesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "tags": [
+          "Status"
+        ],
+        "summary": "Get Status",
+        "description": "Check Percept pipeline health and stats.",
+        "operationId": "get_status_api_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EntitiesResponse": {
+        "properties": {
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Query"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "entities": {
+            "items": {
+              "$ref": "#/components/schemas/EntityItem"
+            },
+            "type": "array",
+            "title": "Entities"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "count",
+          "entities"
+        ],
+        "title": "EntitiesResponse"
+      },
+      "EntityItem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "entity_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity Type"
+          },
+          "mention_count": {
+            "type": "integer",
+            "title": "Mention Count",
+            "default": 0
+          },
+          "last_mentioned": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Mentioned"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "EntityItem"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "SearchResponse": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "result_count": {
+            "type": "integer",
+            "title": "Result Count"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "result_count",
+          "results"
+        ],
+        "title": "SearchResponse"
+      },
+      "SearchResult": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "highlighted": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Highlighted"
+          },
+          "speaker_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaker Id"
+          },
+          "conversation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversation Id"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          }
+        },
+        "type": "object",
+        "title": "SearchResult"
+      },
+      "SpeakerItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "total_words": {
+            "type": "integer",
+            "title": "Total Words",
+            "default": 0
+          },
+          "total_segments": {
+            "type": "integer",
+            "title": "Total Segments",
+            "default": 0
+          },
+          "first_seen": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Seen"
+          },
+          "last_seen": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Seen"
+          },
+          "relationship": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relationship"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "SpeakerItem"
+      },
+      "SpeakersResponse": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "speakers": {
+            "items": {
+              "$ref": "#/components/schemas/SpeakerItem"
+            },
+            "type": "array",
+            "title": "Speakers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "speakers"
+        ],
+        "title": "SpeakersResponse"
+      },
+      "StatusResponse": {
+        "properties": {
+          "server": {
+            "type": "string",
+            "title": "Server"
+          },
+          "uptime_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uptime Seconds"
+          },
+          "today_conversations": {
+            "type": "integer",
+            "title": "Today Conversations",
+            "default": 0
+          },
+          "today_words": {
+            "type": "integer",
+            "title": "Today Words",
+            "default": 0
+          },
+          "total_conversations": {
+            "type": "integer",
+            "title": "Total Conversations",
+            "default": 0
+          },
+          "total_speakers": {
+            "type": "integer",
+            "title": "Total Speakers",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "server"
+        ],
+        "title": "StatusResponse"
+      },
+      "TranscriptItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "word_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Word Count"
+          },
+          "speakers": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speakers"
+          },
+          "topics": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topics"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "transcript_preview": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transcript Preview"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "TranscriptItem"
+      },
+      "TranscriptsResponse": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "today_only": {
+            "type": "boolean",
+            "title": "Today Only"
+          },
+          "transcripts": {
+            "items": {
+              "$ref": "#/components/schemas/TranscriptItem"
+            },
+            "type": "array",
+            "title": "Transcripts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "today_only",
+          "transcripts"
+        ],
+        "title": "TranscriptsResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
