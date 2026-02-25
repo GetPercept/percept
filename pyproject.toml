@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "getpercept"
-version = "0.1.0"
+version = "0.1.1"
 description = "Ambient voice intelligence for AI agents — give your agent ears"
 readme = "README.md"
 license = {text = "MIT"}
