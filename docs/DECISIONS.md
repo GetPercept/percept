@@ -106,3 +106,31 @@ Percept's key technical and strategic decisions, with rationale. Prevents re-lit
 ## ADR-021: Utterances as Atomic Unit (2026-02-21)
 **Decision:** Individual speech segments (utterances), not whole conversations, are the atomic data unit.
 **Rationale:** Per the CIL spec: utterances have speaker, timestamps, confidence. They're the granular unit for FTS5 search, entity extraction, speaker analytics. Conversations are aggregates. This enables "search for what Sarah said about the budget" vs just "search conversations about the budget."
+
+## ADR-022: MCP Server as Second Query Interface (2026-02-24)
+**Decision:** Ship an MCP (Model Context Protocol) server alongside the CLI as a first-class way to query Percept.
+**Alternatives:** REST API only, GraphQL, custom protocol
+**Rationale:** MCP is the emerging standard for AI assistant tool integration (Claude Desktop, etc.). Shipping MCP means any MCP-compatible AI can query conversations, entities, speakers without custom integration work. CLI for humans/scripts, MCP for AI assistants. Both read the same CIL — no data duplication.
+**Trade-offs:** MCP is Anthropic-originated (potential perception of vendor lock-in), but spec is open and other clients adopting.
+
+## ADR-023: HN Launch Deferred Until App Store Approval (2026-02-24)
+**Decision:** Do not launch on Hacker News until the Watch app is approved on the App Store.
+**Rationale:** David's call. HN is a one-shot opportunity — if the demo includes "download the Watch app" and it's not available, we lose credibility. Wait for Apple approval, then launch with the full story: CLI + MCP + Watch app all available simultaneously.
+
+## ADR-024: Watch > iPhone > Mac App Priority Order (2026-02-24)
+**Decision:** Apple Watch app first, iPhone companion second, Mac native app third.
+**Rationale:** Watch is the most compelling wearable form factor (always on wrist, raise-to-speak). iPhone companion is needed for TestFlight distribution and WatchConnectivity. Mac native is lowest priority because CLI already covers Mac users.
+
+## ADR-025: CLI Primary, MCP for Anthropic Audience (2026-02-24)
+**Decision:** CLI remains the primary interface. MCP targets the Anthropic/Claude ecosystem specifically.
+**Rationale:** CLI is universal (any agent, any framework, pipe it). MCP specifically targets Claude Desktop users — a high-value, technically sophisticated audience likely to contribute to open source. Two distribution channels, one product.
+
+## ADR-026: Granola Bridge vs Standalone (2026-02-24)
+**Decision:** Use existing community granola-mcp servers for standalone Granola access. Our integration bridges Granola data into Percept's unified knowledge base.
+**Alternatives:** Build our own standalone granola-mcp, ignore Granola entirely
+**Rationale:** ernestkoe's granola-mcp (70★) already exists for direct Granola access. Our value-add is different: unified search across Omi + Granola + future sources in one CIL. Don't compete with existing tools — integrate them.
+
+## ADR-027: TestFlight as Watch App Distribution Path (2026-02-24)
+**Decision:** TestFlight for Watch app beta distribution, then App Store for public release.
+**Alternatives:** Ad-hoc distribution, enterprise certificate
+**Rationale:** TestFlight is the only way to get watchOS apps to external testers without enterprise enrollment. iOS companion app required (wraps watchOS app). Standard Apple distribution path — no shortcuts.

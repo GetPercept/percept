@@ -572,6 +572,69 @@ def cmd_purge(args):
     db.close()
 
 
+# ── Meeting Source Connectors ──────────────────────────────────────────
+
+def cmd_granola_sync(args):
+    """Import meetings from Granola."""
+    sys.path.insert(0, str(BASE_DIR))
+    from tools.granola_import import main as granola_main
+    # Build argv for granola_import
+    argv = []
+    if args.api:
+        argv.append("--api")
+    if args.since:
+        argv.extend(["--since", args.since])
+    if args.dry_run:
+        argv.append("--dry-run")
+    sys.argv = ["granola_import"] + argv
+    granola_main()
+
+
+def cmd_zoom_sync(args):
+    """Sync recent Zoom cloud recordings."""
+    from src.zoom_connector import sync_recent
+    results = sync_recent(days=args.days)
+    if not results:
+        print(f"{C.DIM}No recordings with transcripts found in last {args.days} days{C.RESET}")
+        return
+    for r in results:
+        status = r.get("status", "error")
+        topic = r.get("topic", "Unknown")
+        words = r.get("word_count", 0)
+        icon = f"{C.GREEN}✓{C.RESET}" if status == "imported" else f"{C.RED}✗{C.RESET}"
+        print(f"  {icon} {topic} ({words} words)")
+    print(f"\n{C.GREEN}Imported {len([r for r in results if r.get('status') == 'imported'])} recordings{C.RESET}")
+
+
+def cmd_zoom_import(args):
+    """Import a specific Zoom recording or VTT file."""
+    from src.zoom_connector import import_recording, import_vtt_file
+    source = args.source
+    if Path(source).exists():
+        result = import_vtt_file(source, topic=args.topic)
+    else:
+        result = import_recording(source)
+    if result.get("error"):
+        print(f"{C.RED}✗{C.RESET} {result['error']}")
+    else:
+        print(f"{C.GREEN}✓{C.RESET} Imported: {result.get('topic', 'Unknown')} "
+              f"({result.get('word_count', 0)} words, {result.get('segments', 0)} segments)")
+
+
+def cmd_chatgpt_api(args):
+    """Start ChatGPT Actions API server."""
+    if args.export_schema:
+        from src.chatgpt_actions import export_openapi_schema
+        export_openapi_schema(args.export_schema)
+        print(f"{C.GREEN}✓{C.RESET} Schema exported to {args.export_schema}")
+        return
+    import uvicorn
+    from src.chatgpt_actions import app
+    print(f"{C.GREEN}▶{C.RESET} ChatGPT Actions API on http://{args.host}:{args.port}")
+    print(f"  OpenAPI schema: http://{args.host}:{args.port}/openapi.json")
+    uvicorn.run(app, host=args.host, port=args.port)
+
+
 # ── Main ───────────────────────────────────────────────────────────────
 
 def main():
@@ -644,6 +707,24 @@ def main():
     p_purge.add_argument("--all", action="store_true", help="Delete all data")
     p_purge.add_argument("--confirm", action="store_true", help="Confirm destructive action")
 
+    # ── Meeting source connectors ──
+    p_granola = sub.add_parser("granola-sync", help="Import meetings from Granola (local cache or API)")
+    p_granola.add_argument("--api", action="store_true", help="Use Granola Enterprise API instead of local cache")
+    p_granola.add_argument("--since", default=None, help="Only import meetings after date (YYYY-MM-DD)")
+    p_granola.add_argument("--dry-run", action="store_true", help="Preview without writing to DB")
+
+    p_zoom_sync = sub.add_parser("zoom-sync", help="Import recent Zoom cloud recordings")
+    p_zoom_sync.add_argument("--days", type=int, default=7, help="How many days back to sync (default 7)")
+
+    p_zoom_import = sub.add_parser("zoom-import", help="Import a specific Zoom recording or VTT file")
+    p_zoom_import.add_argument("source", help="Zoom meeting ID or path to .vtt file")
+    p_zoom_import.add_argument("--topic", default=None, help="Meeting topic (for VTT files)")
+
+    p_chatgpt = sub.add_parser("chatgpt-api", help="Start ChatGPT Actions API server")
+    p_chatgpt.add_argument("--port", type=int, default=8901, help="Port (default 8901)")
+    p_chatgpt.add_argument("--host", default="127.0.0.1", help="Bind address")
+    p_chatgpt.add_argument("--export-schema", type=str, default=None, help="Export OpenAPI schema to file and exit")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -663,6 +744,10 @@ def main():
         "speakers": cmd_speakers,
         "security-log": cmd_security_log,
         "mcp": lambda _: __import__("src.mcp_server", fromlist=["run"]).run(),
+        "granola-sync": cmd_granola_sync,
+        "zoom-sync": cmd_zoom_sync,
+        "zoom-import": cmd_zoom_import,
+        "chatgpt-api": cmd_chatgpt_api,
     }
     cmds[args.command](args)
 

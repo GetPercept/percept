@@ -1,6 +1,6 @@
 # Percept Roadmap
 
-Last updated: 2026-02-21
+Last updated: 2026-02-24
 
 ---
 
@@ -73,14 +73,24 @@ Last updated: 2026-02-21
 
 ## Tracks
 
+### MCP Server ✅ SHIPPED
+- [x] 8 tools + 2 resources for AI assistant integration
+- [x] Claude Desktop integration verified
+- [x] 216 tests passing
+- [x] Demo video recorded
+- [ ] PyPI package publish (`pip install getpercept`)
+- [ ] MCP Registry listing
+
 ### Watch App
 - [x] Architecture designed (push-to-talk, raise-to-speak, complication)
 - [x] Project scaffolding with xcodegen
 - [x] Mock mode for simulator testing
-- [ ] **Real device testing** — needs physical Apple Watch
+- [x] App icons generated
+- [x] **TestFlight build uploaded**
+- [ ] Apple review & approval
+- [ ] Real device testing
 - [ ] Audio pipeline validation on device
 - [ ] WatchConnectivity reliability testing
-- [ ] App Store TestFlight distribution
 
 ### Landing Page
 - [x] Built and served on port 8950
@@ -94,12 +104,15 @@ Last updated: 2026-02-21
 - [x] MIT license
 - [x] Comprehensive documentation (9 doc files + README + CHANGELOG)
 - [x] Protocol specification with JSON Schemas
+- [x] Test suite (216 tests passing)
+- [x] MCP demo video recorded and embedded in README
+- [x] Reddit r/ClaudeAI post live
+- [x] awesome-mcp-servers PR submitted
 - [ ] **Make repo public** (after demo is undeniable)
 - [ ] PyPI package (`pip install getpercept`)
 - [ ] GitHub Actions CI
-- [ ] Test suite
-- [ ] HN launch post
-- [ ] Reddit launch (r/machinelearning, r/selfhosted, r/openai)
+- [ ] HN launch post (deferred until App Store approval)
+- [ ] Reddit launch (r/machinelearning, r/selfhosted)
 - [ ] Product Hunt launch
 - [ ] OpenClaw Discord announcement
 
@@ -129,7 +142,9 @@ Last updated: 2026-02-21
 | SQLite persistence | Feb 21 | ✅ Done |
 | CIL spec written | Feb 21 | ✅ Done |
 | Vector search working | Feb 21 | ✅ Done |
-| Demo video filmed | TBD | ⬜ |
+| MCP server shipped | Feb 24 | ✅ Done |
+| TestFlight uploaded | Feb 24 | ✅ Done |
+| Demo video filmed | Feb 24 | ✅ Done |
 | Repo goes public | TBD | ⬜ |
 | 1K GitHub stars | Month 1 post-launch | ⬜ |
 | First external contributor | Month 1 post-launch | ⬜ |
