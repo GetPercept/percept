@@ -9,10 +9,12 @@ OpenClaw is an open-source agent runtime — a persistent AI assistant that runs
 ## Installing as an OpenClaw Skill
 
 ```bash
-openclaw skill install percept
+clawhub install percept-meetings
 ```
 
-This registers Percept's voice pipeline as an available skill in your OpenClaw agent.
+This gives your OpenClaw agent meeting context from Zoom, Granola, and Omi. Your agent can search transcripts, find action items, and act on meeting outcomes.
+
+The skill is published on [ClawHub](https://clawhub.ai) as `percept-meetings` v1.0.0.
 
 ## How Voice Commands Route Through OpenClaw
 

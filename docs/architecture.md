@@ -4,8 +4,13 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                     AUDIO SOURCE                              │
-│  Omi Pendant → Phone App → Webhook POST                      │
+│                     INPUT SOURCES                             │
+│                                                              │
+│  Omi Pendant → Phone → Webhook POST (real-time)              │
+│  Zoom → Cloud Recording → percept zoom-sync (batch)          │
+│  Granola → Local Cache → percept granola-sync (batch)        │
+│  Apple Watch → Push-to-Talk → /webhook/audio (real-time)     │
+│  Any VTT file → percept zoom-import (manual)                 │
 └──────────────┬──────────────────────┬────────────────────────┘
                │                      │
         /webhook/audio         /webhook/transcript
@@ -31,10 +36,14 @@
 └──────────────────────────┼──────────────────────┼────────────┘
                            │                      │
                     ┌──────▼──────────────────────▼─────┐
-                    │         AGENT (OpenClaw / etc)     │
-                    │  • Execute voice commands          │
-                    │  • Generate & send summaries       │
-                    │  • Set reminders                   │
+                    │           OUTPUT LAYER             │
+                    │                                    │
+                    │  OpenClaw  ← clawhub install       │
+                    │              percept-meetings      │
+                    │  Claude    ← MCP server (8 tools)  │
+                    │  ChatGPT  ← Actions API (REST)    │
+                    │  CLI      ← percept search/status  │
+                    │  Webhook  ← custom endpoint        │
                     └───────────────────────────────────┘
 ```
 
@@ -107,6 +116,9 @@ percept/
 │   ├── intent_parser.py # Two-tier intent parser (regex + LLM)
 │   ├── database.py      # SQLite persistence (conversations, utterances, relationships)
 │   ├── vector_store.py  # NVIDIA NIM + LanceDB semantic search
+│   ├── chatgpt_actions.py # ChatGPT Custom GPT Actions API (port 8901)
+│   ├── zoom_connector.py  # Zoom: webhook, batch sync, VTT import
+│   ├── mcp_server.py     # MCP server for Claude Desktop (8 tools + 2 resources)
 │   └── cli.py           # CLI entry point
 ├── config/
 │   └── config.json      # Server, whisper, audio settings
