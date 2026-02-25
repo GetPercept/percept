@@ -1,3 +1,4 @@
+<!-- mcp-name: io.github.davidemanuelDEV/percept -->
 <p align="center">
   <h1 align="center">◉ Percept</h1>
   <p align="center"><strong>Give your AI agent ears.</strong></p>
