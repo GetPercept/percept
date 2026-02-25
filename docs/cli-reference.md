@@ -285,4 +285,60 @@ percept purge                          # Only TTL-expired conversations
 
 ---
 
+## Meeting Source Connectors
+
+### `percept granola-sync`
+
+Import meetings from Granola (local cache or Enterprise API).
+
+```bash
+percept granola-sync                   # Import from local cache
+percept granola-sync --api             # Use Granola Enterprise API
+percept granola-sync --since 2026-02-01  # Only after this date
+percept granola-sync --dry-run         # Preview without writing
+```
+
+Reads from `~/Library/Application Support/Granola/cache-v3.json`. Enterprise API requires `GRANOLA_API_KEY` env var.
+
+---
+
+### `percept zoom-sync`
+
+Batch import recent Zoom cloud recordings with transcripts.
+
+```bash
+percept zoom-sync                      # Last 7 days (default)
+percept zoom-sync --days 30            # Last 30 days
+```
+
+Requires env vars: `ZOOM_ACCOUNT_ID`, `ZOOM_CLIENT_ID`, `ZOOM_CLIENT_SECRET` from a Zoom Server-to-Server OAuth app.
+
+---
+
+### `percept zoom-import`
+
+Import a specific Zoom recording or local VTT transcript file.
+
+```bash
+percept zoom-import 12345678901        # Zoom meeting ID
+percept zoom-import meeting.vtt        # Local VTT file
+percept zoom-import meeting.vtt --topic "Weekly Standup"
+```
+
+---
+
+### `percept chatgpt-api`
+
+Start the ChatGPT Actions API server (REST endpoints for Custom GPTs).
+
+```bash
+percept chatgpt-api                    # Start on port 8901
+percept chatgpt-api --port 9000        # Custom port
+percept chatgpt-api --export-schema openapi.json  # Export schema and exit
+```
+
+Endpoints: `/api/search`, `/api/transcripts`, `/api/speakers`, `/api/entities`, `/api/status`. Auth via `PERCEPT_API_TOKEN` env var.
+
+---
+
 Next: [API Reference](api-reference.md) | [Configuration](configuration.md)

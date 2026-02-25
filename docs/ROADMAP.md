@@ -99,8 +99,8 @@ Last updated: 2026-02-24
 - [ ] SEO optimization
 - [ ] Blog/content section
 
-### Open Source Launch
-- [x] Private GitHub repo (GetPercept/percept)
+### Open Source Launch ✅ LIVE
+- [x] Public GitHub repo (GetPercept/percept)
 - [x] MIT license
 - [x] Comprehensive documentation (9 doc files + README + CHANGELOG)
 - [x] Protocol specification with JSON Schemas
@@ -108,21 +108,33 @@ Last updated: 2026-02-24
 - [x] MCP demo video recorded and embedded in README
 - [x] Reddit r/ClaudeAI post live
 - [x] awesome-mcp-servers PR submitted
-- [ ] **Make repo public** (after demo is undeniable)
+- [x] OpenClaw Discord #showcase announcement
+- [x] Omi Discord showcase announcement
 - [ ] PyPI package (`pip install getpercept`)
 - [ ] GitHub Actions CI
 - [ ] HN launch post (deferred until App Store approval)
-- [ ] Reddit launch (r/machinelearning, r/selfhosted)
-- [ ] Product Hunt launch
-- [ ] OpenClaw Discord announcement
+- [ ] Product Hunt launch (target week of Mar 2)
 
-### ClawHub Skill Pack
-5 skills planned for OpenClaw marketplace:
-- [ ] `percept-listen` — Core audio pipeline
-- [ ] `percept-summarize` — Auto conversation summaries
-- [ ] `percept-voice-cmd` — Voice command parsing + dispatch
-- [ ] `percept-speaker-id` — Speaker identification + tracking
-- [ ] `percept-ambient` — Ambient conversation logging + search
+### Meeting Source Connectors ✅ SHIPPED
+- [x] Omi wearable (real-time webhook)
+- [x] Granola local cache import (`percept granola-sync`)
+- [x] Granola Enterprise API support
+- [x] Zoom cloud recordings import (`percept zoom-sync`)
+- [x] Zoom webhook auto-import (recording.completed)
+- [x] Zoom VTT file import
+- [x] ChatGPT Actions API (port 8901, 5 REST endpoints)
+- [x] OpenAPI schema export for Custom GPT import
+- [ ] Microsoft Teams (Graph API transcript pull)
+- [ ] Google Meet
+- [ ] Fireflies.ai / Otter.ai import
+
+### ClawHub Skill ✅ SHIPPED
+- [x] `percept-meetings` v1.0.0 published to ClawHub
+- [x] Covers Zoom, Granola, Omi sources
+- [x] CLI commands wired: granola-sync, zoom-sync, zoom-import, chatgpt-api
+- [ ] `percept-listen` — Core audio pipeline skill
+- [ ] `percept-voice-cmd` — Voice command skill
+- [ ] `percept-speaker-id` — Speaker identification skill
 
 ### NVIDIA Integration
 - [x] Parakeet ASR tested (gRPC)
@@ -145,6 +157,10 @@ Last updated: 2026-02-24
 | MCP server shipped | Feb 24 | ✅ Done |
 | TestFlight uploaded | Feb 24 | ✅ Done |
 | Demo video filmed | Feb 24 | ✅ Done |
+| Meeting connectors shipped | Feb 25 | ✅ Done |
+| ClawHub skill published | Feb 25 | ✅ Done |
+| OpenClaw Discord showcase | Feb 25 | ✅ Done |
+| Omi Discord showcase | Feb 25 | ✅ Done |
 | Repo goes public | TBD | ⬜ |
 | 1K GitHub stars | Month 1 post-launch | ⬜ |
 | First external contributor | Month 1 post-launch | ⬜ |
