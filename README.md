@@ -110,17 +110,60 @@ Say **"Hey Jarvis, remind me to check email"** and watch it work.
 
 ## Integrations
 
+### OpenClaw Skill
+
+Install the **percept-meetings** skill to give your OpenClaw agent meeting context:
+
+```bash
+clawhub install percept-meetings
+```
+
+Your agent can then search meetings, find action items, and follow up — from Zoom, Granola, and Omi sources. See [ClawHub](https://clawhub.ai) for details.
+
 ### Granola Meeting Notes
 
 Import your [Granola](https://granola.ai) meeting notes into Percept's searchable knowledge base:
 
 ```bash
-python tools/granola_import.py
+percept granola-sync
 ```
 
-Reads from `~/Library/Application Support/Granola/cache-v3.json`, maps documents + transcripts into Percept's conversations table. Your Omi ambient audio and Granola structured notes become one unified, searchable knowledge base — all queryable through the MCP tools.
+Reads from `~/Library/Application Support/Granola/cache-v3.json`, maps documents + transcripts into Percept's conversations table. Your Omi ambient audio and Granola structured notes become one unified, searchable knowledge base — all queryable through the MCP tools or CLI.
 
 Supports `--since 2026-02-01`, `--dry-run`, and Enterprise API mode (`GRANOLA_API_KEY`).
+
+### Zoom Cloud Recordings
+
+Import Zoom meeting transcripts automatically:
+
+```bash
+# Sync last 7 days of recordings
+percept zoom-sync --days 7
+
+# Import a specific meeting or VTT file
+percept zoom-import <meeting_id>
+percept zoom-import /path/to/meeting.vtt --topic "Weekly Standup"
+```
+
+Requires a Zoom Server-to-Server OAuth app ([setup guide](docs/zoom-setup.md)). Also supports a webhook server for auto-import when recordings complete:
+
+```bash
+percept zoom-serve --port 8902
+```
+
+### ChatGPT Custom GPT
+
+Expose Percept as a ChatGPT Actions API for any Custom GPT:
+
+```bash
+# Start the API server
+percept chatgpt-api --port 8901
+
+# Export OpenAPI schema for Custom GPT import
+percept chatgpt-api --export-schema openapi.json
+```
+
+5 REST endpoints: `/api/search`, `/api/transcripts`, `/api/speakers`, `/api/entities`, `/api/status`. Bearer token auth via `PERCEPT_API_TOKEN`.
 
 ## Supported Hardware
 
@@ -162,6 +205,14 @@ percept speakers authorize SPEAKER_0  # Authorize a speaker
 percept speakers revoke SPEAKER_0     # Revoke a speaker
 percept config set webhook_secret <token>  # Set webhook auth token
 percept security-log           # View blocked attempts
+
+# Meeting source connectors
+percept granola-sync           # Import from Granola (local cache)
+percept granola-sync --api     # Import via Granola Enterprise API
+percept zoom-sync --days 7     # Sync recent Zoom recordings
+percept zoom-import <id>       # Import specific Zoom meeting
+percept zoom-import file.vtt   # Import local VTT transcript
+percept chatgpt-api            # Start ChatGPT Actions API (port 8901)
 ```
 
 > See [CLI Reference](docs/cli-reference.md) for full details.
