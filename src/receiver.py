@@ -22,6 +22,7 @@ from src.context import save_conversation
 from src.intent_parser import IntentParser
 from src.database import PerceptDB
 from src.entity_extractor import EntityExtractor
+from src.commitment_tracker import CommitmentTracker
 from src.context_engine import ContextEngine
 from src.speaker_manager import load_speakers, save_speakers, resolve_speaker, resolve_text_with_names, is_speaker_authorized
 from src.flush_manager import FlushManager
@@ -43,6 +44,7 @@ def _get_binary_path(name: str) -> str:
 # Initialize database
 _db = PerceptDB()
 _entity_extractor = EntityExtractor(db=_db, llm_enabled=False)
+_commitment_tracker = CommitmentTracker(db=_db)
 
 # --- Audio buffer + transcriber for Watch app ---
 from src.audio_buffer import AudioBufferManager
@@ -780,6 +782,29 @@ async def _summarize_conversation(session_key: str):
             print(f"[CIL] Extracted {len(entities)} entities, built relationships", flush=True)
     except Exception as e:
         logger.warning(f"Entity extraction failed: {e}")
+
+    # Commitment tracking (CIL Level 2)
+    try:
+        commitment_utterances = [
+            {
+                "text": s.get("text", ""),
+                "speaker_id": s.get("speaker", "SPEAKER_00"),
+                "speaker_name": s.get("speaker", "SPEAKER_00"),
+                "timestamp": s.get("timestamp", datetime.now().timestamp()),
+            }
+            for s in segments
+        ]
+        commitments = _commitment_tracker.extract_commitments(
+            commitment_utterances, conversation_id=conv_id_ee
+        )
+        if commitments:
+            saved = _commitment_tracker.save_commitments(commitments)
+            print(f"[CIL] Tracked {saved} commitments", flush=True)
+            for c in commitments:
+                deadline_str = f" (due: {c.deadline})" if c.deadline else ""
+                print(f"  → {c.assignee}: {c.action[:80]}{deadline_str} [{c.confidence:.0%}]", flush=True)
+    except Exception as e:
+        logger.warning(f"Commitment tracking failed: {e}")
 
     # Save raw transcript
     now = datetime.now()

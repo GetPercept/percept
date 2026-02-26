@@ -542,6 +542,77 @@ def cmd_audit(args):
     print()
 
 
+def cmd_commitments(args):
+    """Track commitments and promises from conversations."""
+    from src.database import PerceptDB
+    from src.commitment_tracker import CommitmentTracker
+    from datetime import datetime
+
+    db = PerceptDB()
+    tracker = CommitmentTracker(db=db)
+
+    action = args.action or "list"
+
+    if action == "fulfill":
+        cid = args.id
+        if not cid:
+            print(f"{C.RED}✗{C.RESET} --id required for fulfill")
+            return
+        if tracker.fulfill(cid):
+            print(f"{C.GREEN}✓{C.RESET} Marked as fulfilled: {cid[:8]}...")
+        else:
+            print(f"{C.RED}✗{C.RESET} Failed to fulfill {cid[:8]}...")
+        db.close()
+        return
+
+    if action == "cancel":
+        cid = args.id
+        if not cid:
+            print(f"{C.RED}✗{C.RESET} --id required for cancel")
+            return
+        if tracker.cancel(cid):
+            print(f"{C.GREEN}✓{C.RESET} Cancelled: {cid[:8]}...")
+        else:
+            print(f"{C.RED}✗{C.RESET} Failed to cancel {cid[:8]}...")
+        db.close()
+        return
+
+    if action == "overdue":
+        overdue = tracker.check_overdue()
+        if not overdue:
+            print(f"\n{C.GREEN}✓{C.RESET} No overdue commitments!\n")
+            db.close()
+            return
+        print(f"\n{C.BOLD}{C.RED}⚠ Overdue Commitments{C.RESET}\n")
+        for c in overdue:
+            days = c["days_overdue"]
+            print(f"  {C.RED}●{C.RESET} {C.BOLD}{c['speaker']}{C.RESET}: {c['action'][:80]}")
+            print(f"    Due: {c['deadline']} ({days:.0f} days overdue) | Confidence: {c['confidence']:.0%}")
+            print(f"    ID: {c['id'][:8]}...")
+            print()
+        db.close()
+        return
+
+    # Default: list open commitments
+    commitments = tracker.get_open_commitments(speaker=args.speaker)
+    if not commitments:
+        print(f"\n{C.DIM}No open commitments.{C.RESET}\n")
+        db.close()
+        return
+
+    print(f"\n{C.BOLD}{C.CYAN}📋 Open Commitments{C.RESET}\n")
+    for c in commitments:
+        deadline_str = f" | Due: {c['deadline']}" if c.get("deadline") else ""
+        status_color = C.YELLOW if c.get("deadline_dt") and c["deadline_dt"] < datetime.now().timestamp() else C.GREEN
+        extracted = datetime.fromtimestamp(c["extracted_at"]).strftime("%b %d") if c.get("extracted_at") else ""
+
+        print(f"  {status_color}●{C.RESET} {C.BOLD}{c['speaker']}{C.RESET}: {c['action'][:80]}")
+        print(f"    {extracted}{deadline_str} | Confidence: {c['confidence']:.0%} | ID: {c['id'][:8]}...")
+        print()
+
+    db.close()
+
+
 def cmd_purge(args):
     """Purge data."""
     from src.database import PerceptDB
@@ -697,6 +768,13 @@ def main():
     # audit
     sub.add_parser("audit", help="Show data stats (conversations, utterances, speakers, etc.)")
 
+    # commitments (CIL Level 2)
+    p_commit = sub.add_parser("commitments", help="Track commitments and promises from conversations")
+    p_commit.add_argument("action", nargs="?", default="list", choices=["list", "overdue", "fulfill", "cancel"],
+                          help="list (default), overdue, fulfill <id>, cancel <id>")
+    p_commit.add_argument("--speaker", default=None, help="Filter by speaker name")
+    p_commit.add_argument("--id", default=None, help="Commitment ID (for fulfill/cancel)")
+
     # mcp
     sub.add_parser("mcp", help="Start MCP server (Model Context Protocol) for Claude Desktop")
 
@@ -749,6 +827,7 @@ def main():
         "config": cmd_config,
         "search": cmd_search,
         "audit": cmd_audit,
+        "commitments": cmd_commitments,
         "purge": cmd_purge,
         "speakers": cmd_speakers,
         "security-log": cmd_security_log,
