@@ -124,8 +124,10 @@ Last updated: 2026-02-24
 - [x] Zoom VTT file import
 - [x] ChatGPT Actions API (port 8901, 5 REST endpoints)
 - [x] OpenAPI schema export for Custom GPT import
-- [ ] Microsoft Teams (Graph API transcript pull)
-- [ ] Google Meet
+- [x] Browser audio capture via Chrome extension (`percept capture-browser`)
+- [x] Google Meet (via browser capture)
+- [x] Zoom web client (via browser capture)
+- [x] Microsoft Teams web (via browser capture)
 - [ ] Fireflies.ai / Otter.ai import
 
 ### ClawHub Skill ✅ SHIPPED
@@ -161,6 +163,7 @@ Last updated: 2026-02-24
 | ClawHub skill published | Feb 25 | ✅ Done |
 | OpenClaw Discord showcase | Feb 25 | ✅ Done |
 | Omi Discord showcase | Feb 25 | ✅ Done |
+| Browser audio capture (Chrome extension) | Feb 26 | ✅ Done |
 | Repo goes public | TBD | ⬜ |
 | 1K GitHub stars | Month 1 post-launch | ⬜ |
 | First external contributor | Month 1 post-launch | ⬜ |
