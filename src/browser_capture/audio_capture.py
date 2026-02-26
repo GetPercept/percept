@@ -125,7 +125,7 @@ CAPTURE_JS = """
             const b64 = btoa(binary);
             
             // Post to Percept receiver
-            fetch('PERCEPT_URL/audio', {
+            fetch('PERCEPT_URL/audio/browser', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
