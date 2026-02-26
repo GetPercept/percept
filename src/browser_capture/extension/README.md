@@ -1,12 +1,20 @@
 # Percept Browser Audio Capture — Chrome Extension
 
-**Give any AI agent ears for online meetings.** One extension captures tab audio from every browser-based meeting platform — no API keys, no OAuth, no per-platform integration.
+**Give any AI agent ears for the browser.** One extension captures audio from any Chrome tab — meetings, YouTube, podcasts, webinars, courses, earnings calls, customer support tools — and streams it to your AI pipeline.
 
 ## Why This Exists
 
-Every meeting platform has its own API. Zoom needs OAuth + Server-to-Server apps. Teams needs Graph API permissions. Google Meet has no public API at all.
+Your AI agent is deaf to everything happening in your browser. Meeting platforms each have their own API (if they have one at all). YouTube has no transcript API for live content. Podcasts, webinars, courses — no programmatic access.
 
-This extension skips all of that. It captures audio directly from the browser tab using Chrome's `tabCapture` API and streams PCM16 audio to a local HTTP endpoint. Your AI agent receives structured audio chunks it can transcribe, summarize, or act on — from any meeting platform that runs in Chrome.
+This extension captures audio directly from any browser tab using Chrome's `tabCapture` API and streams PCM16 audio to a local HTTP endpoint. Your AI agent receives structured audio chunks it can transcribe, summarize, search, or act on — from anything playing in Chrome.
+
+### What can your agent do with browser audio?
+- **Meetings** → Auto-summarize, extract action items, follow up
+- **YouTube/tutorials** → Searchable notes, "what did they say about X?"
+- **Podcasts/webinars** → Capture insights while you listen
+- **Earnings calls** → Extract financial signals, competitor intel
+- **Online courses** → Build a knowledge base of everything you've learned
+- **Customer calls** → Sentiment analysis, objection tracking, auto-CRM updates
 
 ## Works With Any AI Framework
 
