@@ -167,32 +167,77 @@ percept chatgpt-api --export-schema openapi.json
 
 5 REST endpoints: `/api/search`, `/api/transcripts`, `/api/speakers`, `/api/entities`, `/api/status`. Bearer token auth via `PERCEPT_API_TOKEN`.
 
-### Browser Audio Capture
+### Browser Audio Capture — Give Any AI Agent Ears for Online Meetings
 
-Capture audio from any browser tab — Zoom, Google Meet, Teams, Webex, and more. Zero API keys, 100% local.
+**The problem:** Every meeting platform (Zoom, Teams, Meet) has its own API, its own OAuth flow, its own rate limits. Want your AI agent to listen to meetings? Prepare for weeks of integration work per platform.
+
+**The solution:** One Chrome extension that captures tab audio from *any* browser-based meeting. No API keys. No OAuth. No cloud. No per-platform integrations. Just raw audio from the browser tab, streamed to your local AI pipeline.
+
+**Works with any AI agent framework** — Claude, ChatGPT, OpenClaw, LangChain, CrewAI, or your own. If your agent can make HTTP requests or run shell commands, it can receive meeting audio.
+
+```
+Browser Tab (any meeting) → Chrome Extension → PCM16 @ 16kHz → Your AI Pipeline
+```
+
+#### Supported platforms (out of the box)
+Google Meet • Zoom (web) • Microsoft Teams • Webex • Whereby • Around • Cal.com • Riverside • StreamYard • Ping • Daily.co • Jitsi • Discord — and any future platform that runs in a browser tab.
+
+#### Quick start
+
+**Option 1: Chrome Extension (recommended — one click, persistent capture)**
+
+1. `chrome://extensions/` → Developer mode → Load unpacked → select `src/browser_capture/extension/`
+2. Join any meeting in Chrome
+3. Click the Percept icon → **Start Capturing This Tab**
+4. Audio streams to `http://localhost:8900/audio/browser` as base64 PCM16 JSON
+5. Close the popup — capture continues in the background
+
+**Option 2: CLI via Chrome DevTools Protocol**
 
 ```bash
-# List open tabs (flags meeting tabs automatically)
+pip install aiohttp
+
+# List open tabs (meeting tabs flagged with 🎙️)
 percept capture-browser tabs
 
-# Start capturing a meeting tab (auto-detects if no --tab specified)
+# Auto-detect and capture meeting tabs
 percept capture-browser capture
 
-# Auto-detect mode: watches for meetings and starts capture automatically
-percept capture-browser watch
+# Continuous watch mode — auto-starts when you join a meeting
+percept capture-browser watch --interval 15
 
-# Check status / stop
+# Check what's capturing / stop
 percept capture-browser status
 percept capture-browser stop
 ```
 
-For fully automated capture (no user interaction), install the Chrome extension:
+Requires Chrome running with `--remote-debugging-port=9222`.
 
-1. Open `chrome://extensions/` → Enable Developer mode
-2. Load unpacked → select `src/browser_capture/extension/`
-3. Click the Percept icon on any meeting tab → Start Capturing
+#### Standalone skill (for any OpenClaw agent)
 
-Audio streams as PCM16 @ 16kHz directly to the Percept receiver pipeline.
+```bash
+clawhub install browser-audio-capture
+```
+
+This installs the Chrome extension + CLI as a skill that any OpenClaw agent can use — regardless of model (Claude, GPT, Gemini, Llama, etc.).
+
+#### Audio output format
+
+Audio POSTs to your endpoint as JSON:
+
+```json
+{
+  "sessionId": "browser_1709234567890",
+  "audio": "<base64 PCM16>",
+  "sampleRate": 16000,
+  "format": "pcm16",
+  "source": "browser_extension",
+  "tabUrl": "https://meet.google.com/abc-defg-hij",
+  "tabTitle": "Weekly Standup"
+}
+```
+
+Point it at any transcription service — Whisper, Deepgram, AssemblyAI, NVIDIA Riva — or pipe it straight into your agent's context. The endpoint is configurable in `offscreen.js` (`PERCEPT_URL`).
 
 ## Supported Hardware
 
