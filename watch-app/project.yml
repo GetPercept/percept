@@ -21,6 +21,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.percept.companion
+        CURRENT_PROJECT_VERSION: "5"
+        MARKETING_VERSION: "1.0.0"
         INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
         INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
     info:
@@ -44,3 +46,5 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.percept.companion.watchkitapp
+        CURRENT_PROJECT_VERSION: "5"
+        MARKETING_VERSION: "1.0.0"

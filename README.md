@@ -167,20 +167,28 @@ percept chatgpt-api --export-schema openapi.json
 
 5 REST endpoints: `/api/search`, `/api/transcripts`, `/api/speakers`, `/api/entities`, `/api/status`. Bearer token auth via `PERCEPT_API_TOKEN`.
 
-### Browser Audio Capture — Give Any AI Agent Ears for Online Meetings
+### Browser Audio Capture — Give Any AI Agent Ears for the Browser
 
-**The problem:** Every meeting platform (Zoom, Teams, Meet) has its own API, its own OAuth flow, its own rate limits. Want your AI agent to listen to meetings? Prepare for weeks of integration work per platform.
+**Any audio playing in a browser tab, captured and understood by your AI agent.** Meetings, podcasts, YouTube, webinars, earnings calls, online courses, customer support calls — if it plays in Chrome, your agent hears it.
 
-**The solution:** One Chrome extension that captures tab audio from *any* browser-based meeting. No API keys. No OAuth. No cloud. No per-platform integrations. Just raw audio from the browser tab, streamed to your local AI pipeline.
+No API keys. No OAuth. No per-platform integrations. One extension captures everything.
 
-**Works with any AI agent framework** — Claude, ChatGPT, OpenClaw, LangChain, CrewAI, or your own. If your agent can make HTTP requests or run shell commands, it can receive meeting audio.
+**Works with any AI agent framework** — Claude, ChatGPT, OpenClaw, LangChain, CrewAI, or your own. If your agent can make HTTP requests or run shell commands, it can receive browser audio.
 
 ```
-Browser Tab (any meeting) → Chrome Extension → PCM16 @ 16kHz → Your AI Pipeline
+Any Browser Tab Audio → Chrome Extension → PCM16 @ 16kHz → Your AI Pipeline
 ```
 
-#### Supported platforms (out of the box)
-Google Meet • Zoom (web) • Microsoft Teams • Webex • Whereby • Around • Cal.com • Riverside • StreamYard • Ping • Daily.co • Jitsi • Discord — and any future platform that runs in a browser tab.
+#### Use cases
+- 🎙️ **Meetings** — Zoom, Meet, Teams auto-detected and captured
+- 🎓 **Learning** — YouTube tutorials, Coursera, Udemy → searchable notes your agent can reference
+- 🎧 **Podcasts & webinars** — Capture and summarize while you listen
+- 📈 **Competitive intel** — Earnings calls, product demos, investor presentations → structured insights
+- 💬 **Customer calls** — Browser-based support tools (Zendesk, Intercom) → auto-summarize, extract action items
+- 📺 **Any audio content** — If it plays in a tab, your agent gets a transcript
+
+#### Auto-detected meeting platforms
+Google Meet • Zoom (web) • Microsoft Teams • Webex • Whereby • Around • Cal.com • Riverside • StreamYard • Ping • Daily.co • Jitsi • Discord — meetings are auto-flagged, but capture works on **any tab**.
 
 #### Quick start
 
@@ -245,7 +253,7 @@ Point it at any transcription service — Whisper, Deepgram, AssemblyAI, NVIDIA 
 |--------|--------|-------|
 | **Omi Pendant** | ✅ Live | Primary device. BLE to phone, all-day battery. "Critical to our story" |
 | **Apple Watch** | 🔜 Beta | WatchOS app built (push-to-talk, raise-to-speak). Needs real device testing |
-| **Browser (CDP)** | ✅ Live | Chrome extension captures tab audio from any web meeting |
+| **Browser (CDP)** | ✅ Live | Chrome extension captures audio from any browser tab — meetings, YouTube, podcasts, courses, anything |
 | **AirPods** | 🔜 Planned | Via phone mic passthrough |
 | **Any Webhook Source** | ✅ Ready | Standard HTTP webhook interface — any device that POSTs transcripts |
 
