@@ -9,11 +9,12 @@ Your AI agent is deaf to everything happening in your browser. Meeting platforms
 This extension captures audio directly from any browser tab using Chrome's `tabCapture` API and streams PCM16 audio to a local HTTP endpoint. Your AI agent receives structured audio chunks it can transcribe, summarize, search, or act on — from anything playing in Chrome.
 
 ### What can your agent do with browser audio?
+- **Train your agent on any subject** → Play lectures, podcasts, tutorials. Your agent builds a searchable knowledge graph — entities, relationships, key concepts. Ask questions later: "What did they say about X in lecture 3?"
 - **Meetings** → Auto-summarize, extract action items, follow up
-- **YouTube/tutorials** → Searchable notes, "what did they say about X?"
+- **YouTube/tutorials** → Searchable notes, reference anything you've watched
 - **Podcasts/webinars** → Capture insights while you listen
 - **Earnings calls** → Extract financial signals, competitor intel
-- **Online courses** → Build a knowledge base of everything you've learned
+- **Online courses** → Structured knowledge base of everything you've learned
 - **Customer calls** → Sentiment analysis, objection tracking, auto-CRM updates
 
 ## Works With Any AI Framework

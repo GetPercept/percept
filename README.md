@@ -181,6 +181,7 @@ Any Browser Tab Audio → Chrome Extension → PCM16 @ 16kHz → Your AI Pipelin
 
 #### Use cases
 - 🎙️ **Meetings** — Zoom, Meet, Teams auto-detected and captured
+- 🧠 **Train your agent on any subject** — Play a Stanford lecture, a podcast series, or a YouTube playlist. Your agent builds a searchable knowledge graph from everything it hears — entities, relationships, key concepts, timestamps. "What did the professor say about T-cell response in lecture 3?" Just play the content. Your agent learns.
 - 🎓 **Learning** — YouTube tutorials, Coursera, Udemy → searchable notes your agent can reference
 - 🎧 **Podcasts & webinars** — Capture and summarize while you listen
 - 📈 **Competitive intel** — Earnings calls, product demos, investor presentations → structured insights
