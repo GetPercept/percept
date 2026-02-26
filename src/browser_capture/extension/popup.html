@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 320px; font-family: -apple-system, system-ui, sans-serif; padding: 16px; background: #1a1a2e; color: #eee; }
+  h1 { font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  h1 span { font-size: 20px; }
+  .status { padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
+  .status.idle { background: #16213e; color: #8892b0; }
+  .status.active { background: #1b4332; color: #52b788; }
+  .status.error { background: #3d0000; color: #e74c3c; }
+  button { width: 100%; padding: 10px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  button.start { background: #e74c3c; color: white; }
+  button.start:hover { background: #c0392b; }
+  button.stop { background: #2c3e50; color: #ecf0f1; }
+  button.stop:hover { background: #34495e; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .info { font-size: 11px; color: #555; margin-top: 10px; text-align: center; }
+  .captures { margin-top: 8px; }
+  .capture-item { font-size: 12px; padding: 6px 8px; background: #16213e; border-radius: 6px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+  .capture-item .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 8px; }
+  .capture-item button { width: auto; padding: 4px 10px; font-size: 11px; }
+</style>
+</head>
+<body>
+  <h1><span>🎧</span> Percept Capture</h1>
+  <div id="status" class="status idle">No active captures</div>
+  <button id="toggleBtn" class="start" onclick="toggleCapture()">Start Capturing This Tab</button>
+  <div id="captures" class="captures"></div>
+  <div class="info">Audio → Percept → Transcription → AI</div>
+
+<script>
+let currentTabId = null;
+let isCapturing = false;
+
+async function init() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  currentTabId = tab.id;
+  await refreshStatus();
+}
+
+async function refreshStatus() {
+  const resp = await chrome.runtime.sendMessage({ action: "getStatus" });
+  const active = resp.active || [];
+  const thisTab = active.find(c => c.tabId === currentTabId);
+  
+  const statusEl = document.getElementById("status");
+  const btn = document.getElementById("toggleBtn");
+  const capturesEl = document.getElementById("captures");
+  
+  if (thisTab) {
+    isCapturing = true;
+    statusEl.className = "status active";
+    statusEl.textContent = `🎙️ Capturing (${thisTab.sessionId.split("_").pop()})`;
+    btn.className = "stop";
+    btn.textContent = "Stop Capturing";
+  } else {
+    isCapturing = false;
+    statusEl.className = "status idle";
+    statusEl.textContent = active.length > 0 
+      ? `${active.length} tab(s) capturing (not this one)` 
+      : "No active captures";
+    btn.className = "start";
+    btn.textContent = "Start Capturing This Tab";
+  }
+  
+  capturesEl.innerHTML = active.map(c => `
+    <div class="capture-item">
+      <span class="title">Tab ${c.tabId}</span>
+      <button class="stop" onclick="stopTab(${c.tabId})">Stop</button>
+    </div>
+  `).join("");
+}
+
+async function toggleCapture() {
+  const btn = document.getElementById("toggleBtn");
+  btn.disabled = true;
+  
+  if (isCapturing) {
+    await chrome.runtime.sendMessage({ action: "stopCapture", tabId: currentTabId });
+  } else {
+    const result = await chrome.runtime.sendMessage({ action: "startCapture", tabId: currentTabId });
+    if (result.status === "error") {
+      const statusEl = document.getElementById("status");
+      statusEl.className = "status error";
+      statusEl.textContent = `Error: ${result.error}`;
+      btn.disabled = false;
+      return;
+    }
+  }
+  
+  await refreshStatus();
+  btn.disabled = false;
+}
+
+async function stopTab(tabId) {
+  await chrome.runtime.sendMessage({ action: "stopCapture", tabId });
+  await refreshStatus();
+}
+
+init();
+</script>
+</body>
+</html>

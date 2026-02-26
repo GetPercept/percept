@@ -725,6 +725,15 @@ def main():
     p_chatgpt.add_argument("--host", default="127.0.0.1", help="Bind address")
     p_chatgpt.add_argument("--export-schema", type=str, default=None, help="Export OpenAPI schema to file and exit")
 
+    # Browser audio capture
+    p_browser = sub.add_parser("capture-browser", help="Capture audio from browser tabs via Chrome CDP")
+    p_browser.add_argument("subcommand", nargs="?", default="status",
+                          choices=["tabs", "capture", "stop", "status", "watch"],
+                          help="Sub-command (default: status)")
+    p_browser.add_argument("--tab", help="Tab ID (auto-detects meeting if omitted)")
+    p_browser.add_argument("--cdp-url", default="http://127.0.0.1:9222", help="Chrome CDP URL")
+    p_browser.add_argument("--interval", type=int, default=15, help="Watch check interval (seconds)")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -748,6 +757,11 @@ def main():
         "zoom-sync": cmd_zoom_sync,
         "zoom-import": cmd_zoom_import,
         "chatgpt-api": cmd_chatgpt_api,
+        "capture-browser": lambda a: __import__(
+            "src.browser_capture.cli", fromlist=["main"]
+        ).main([a.subcommand] + (["--tab", a.tab] if a.tab else []) +
+               ["--cdp-url", a.cdp_url] +
+               (["--interval", str(a.interval)] if a.subcommand == "watch" else [])),
     }
     cmds[args.command](args)
 
