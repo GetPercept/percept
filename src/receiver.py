@@ -1120,6 +1120,45 @@ async def _on_audio_complete(session_id: str, pcm_bytes: bytes):
 _audio_buffer_manager = AudioBufferManager(on_complete=_on_audio_complete)
 
 
+@app.post("/audio/browser")
+async def receive_browser_audio(request: Request):
+    """Receive PCM16 audio from browser extension (JSON, base64-encoded).
+
+    No auth required (localhost only). Feeds into the same pipeline as /webhook/transcript.
+    """
+    import base64
+    try:
+        body = await request.json()
+        session_id = body.get("sessionId", "browser_unknown")
+        audio_b64 = body.get("audio", "")
+        sample_rate = body.get("sampleRate", 16000)
+        tab_title = body.get("tabTitle", "")
+        tab_url = body.get("tabUrl", "")
+
+        audio_bytes = base64.b64decode(audio_b64)
+        if len(audio_bytes) < 100:
+            return JSONResponse({"status": "skipped", "reason": "too short"})
+
+        # Feed into audio buffer manager (same pipeline as Watch app)
+        # sequence_number auto-increments per session
+        if not hasattr(receive_browser_audio, '_seq'):
+            receive_browser_audio._seq = {}
+        seq = receive_browser_audio._seq.get(session_id, 0)
+        receive_browser_audio._seq[session_id] = seq + 1
+
+        await _audio_buffer_manager.add_chunk(session_id, seq, audio_bytes)
+
+        return JSONResponse({
+            "status": "ok",
+            "session": session_id,
+            "bytes": len(audio_bytes),
+            "seq": seq,
+            "tab": tab_title[:50],
+        })
+    except Exception as e:
+        return JSONResponse({"status": "error", "error": str(e)}, status_code=400)
+
+
 @app.post("/audio")
 async def receive_audio_chunks(request: Request):
     """Receive raw PCM16 audio chunks from Apple Watch app.
