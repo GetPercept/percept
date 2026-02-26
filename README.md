@@ -167,12 +167,40 @@ percept chatgpt-api --export-schema openapi.json
 
 5 REST endpoints: `/api/search`, `/api/transcripts`, `/api/speakers`, `/api/entities`, `/api/status`. Bearer token auth via `PERCEPT_API_TOKEN`.
 
+### Browser Audio Capture
+
+Capture audio from any browser tab — Zoom, Google Meet, Teams, Webex, and more. Zero API keys, 100% local.
+
+```bash
+# List open tabs (flags meeting tabs automatically)
+percept capture-browser tabs
+
+# Start capturing a meeting tab (auto-detects if no --tab specified)
+percept capture-browser capture
+
+# Auto-detect mode: watches for meetings and starts capture automatically
+percept capture-browser watch
+
+# Check status / stop
+percept capture-browser status
+percept capture-browser stop
+```
+
+For fully automated capture (no user interaction), install the Chrome extension:
+
+1. Open `chrome://extensions/` → Enable Developer mode
+2. Load unpacked → select `src/browser_capture/extension/`
+3. Click the Percept icon on any meeting tab → Start Capturing
+
+Audio streams as PCM16 @ 16kHz directly to the Percept receiver pipeline.
+
 ## Supported Hardware
 
 | Device | Status | Notes |
 |--------|--------|-------|
 | **Omi Pendant** | ✅ Live | Primary device. BLE to phone, all-day battery. "Critical to our story" |
 | **Apple Watch** | 🔜 Beta | WatchOS app built (push-to-talk, raise-to-speak). Needs real device testing |
+| **Browser (CDP)** | ✅ Live | Chrome extension captures tab audio from any web meeting |
 | **AirPods** | 🔜 Planned | Via phone mic passthrough |
 | **Any Webhook Source** | ✅ Ready | Standard HTTP webhook interface — any device that POSTs transcripts |
 
@@ -215,6 +243,13 @@ percept zoom-sync --days 7     # Sync recent Zoom recordings
 percept zoom-import <id>       # Import specific Zoom meeting
 percept zoom-import file.vtt   # Import local VTT transcript
 percept chatgpt-api            # Start ChatGPT Actions API (port 8901)
+
+# Browser audio capture
+percept capture-browser tabs     # List tabs (flags meetings)
+percept capture-browser capture  # Start capturing (auto-detects meetings)
+percept capture-browser watch    # Auto-detect mode (continuous)
+percept capture-browser status   # Show active captures
+percept capture-browser stop     # Stop all captures
 ```
 
 > See [CLI Reference](docs/cli-reference.md) for full details.
