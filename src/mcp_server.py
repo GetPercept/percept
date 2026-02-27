@@ -341,6 +341,38 @@ def percept_listen(limit: int = 50) -> str:
     })
 
 
+@mcp.tool()
+def get_briefing(person: str = None, minutes_ahead: int = 60) -> str:
+    """Generate pre-meeting context intelligence briefing.
+
+    Creates briefings for upcoming meetings with context about each attendee,
+    including past conversations, open commitments, and relationship history.
+
+    Args:
+        person: Generate briefing for specific person (optional)
+        minutes_ahead: Look for meetings within N minutes (default 60)
+    """
+    try:
+        from src.briefing_engine import BriefingEngine
+        
+        engine = BriefingEngine()
+        
+        if person:
+            # Generate briefing for specific person
+            briefing = engine.briefing_for_person(person)
+            return json.dumps(briefing)
+        else:
+            # Generate briefings for upcoming meetings
+            briefings = engine.generate_briefing(minutes_ahead=minutes_ahead)
+            return json.dumps(briefings)
+            
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to generate briefing: {str(e)}",
+            "status": "error"
+        })
+
+
 # ── Resources ──────────────────────────────────────────────────────────
 
 
