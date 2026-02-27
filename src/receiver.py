@@ -1098,17 +1098,20 @@ async def _on_audio_complete(session_id: str, pcm_bytes: bytes):
 
         # Feed into the same pipeline as webhook/transcript
         # Create synthetic segment data matching what Omi sends
+        is_browser = session_id.startswith("browser_")
+        speaker_label = "BROWSER_AUDIO" if is_browser else "WATCH_USER"
         now = time.time()
         segment_data = [{
             "text": result.text,
-            "speaker": "WATCH_USER",
+            "speaker": speaker_label,
             "is_user": True,
             "start": 0.0,
             "end": len(pcm_bytes) / (SAMPLE_RATE * 2),
         }]
 
         # Accumulate for flush (same as transcript webhook)
-        session_key = f"watch_{session_id}"
+        source_prefix = "browser" if is_browser else "watch"
+        session_key = f"{source_prefix}_{session_id}"
         for s in segment_data:
             _accumulated_segments[session_key].append({
                 "text": s["text"],
@@ -1126,7 +1129,7 @@ async def _on_audio_complete(session_id: str, pcm_bytes: bytes):
         _flush_tasks[session_key] = asyncio.create_task(_schedule_flush(session_key))
 
         # Also add to conversation-level tracking
-        conv_key = f"conv_watch_{session_id}"
+        conv_key = f"conv_{source_prefix}_{session_id}"
         if conv_key not in _conversation_start:
             _conversation_start[conv_key] = now
         _conversation_segments[conv_key].append({
