@@ -10,7 +10,7 @@ from typing import Callable, Awaitable
 logger = logging.getLogger(__name__)
 
 SILENCE_TIMEOUT = 3.0  # seconds of no new chunks before transcription
-MAX_BUFFER_DURATION = 30.0  # max seconds of audio per session (prevent memory leaks)
+MAX_BUFFER_DURATION = 300.0  # max 5 minutes of audio per session before forced flush
 SAMPLE_RATE = 16000
 BYTES_PER_SECOND = SAMPLE_RATE * 2  # 16-bit mono = 2 bytes per sample
 
@@ -28,10 +28,11 @@ class AudioSession:
 class AudioBufferManager:
     """Buffers audio chunks by sessionId; triggers callback after silence."""
 
-    def __init__(self, on_complete: Callable[[str, bytes], Awaitable[None]]):
+    def __init__(self, on_complete: Callable[[str, bytes], Awaitable[None]], silence_timeout: float = None):
         """Initialize AudioBufferManager."""
         self._sessions: dict[str, AudioSession] = {}
         self._on_complete = on_complete
+        self._silence_timeout = silence_timeout or SILENCE_TIMEOUT
 
     def _get_or_create(self, session_id: str) -> AudioSession:
         """Get or create an audio buffer session for the given key."""
@@ -68,7 +69,7 @@ class AudioBufferManager:
 
     async def _silence_timer(self, session_id: str):
         """Wait for silence, then flush."""
-        await asyncio.sleep(SILENCE_TIMEOUT)
+        await asyncio.sleep(self._silence_timeout)
         await self._flush(session_id)
 
     async def _flush(self, session_id: str):

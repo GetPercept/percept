@@ -1144,6 +1144,27 @@ async def _on_audio_complete(session_id: str, pcm_bytes: bytes):
 
 _audio_buffer_manager = AudioBufferManager(on_complete=_on_audio_complete)
 
+# Browser audio uses a longer silence timeout (extension sends every 3s, so need >3s gap)
+from src.audio_buffer import SILENCE_TIMEOUT as _DEFAULT_SILENCE
+_browser_audio_buffer = AudioBufferManager(on_complete=_on_audio_complete, silence_timeout=8.0)
+
+
+@app.post("/audio/browser/stop")
+async def stop_browser_audio(request: Request):
+    """Signal that browser capture has stopped. Flush the buffer immediately."""
+    try:
+        body = await request.json()
+        session_id = body.get("sessionId", "browser_unknown")
+
+        # Force flush the session
+        session = _browser_audio_buffer._sessions.get(session_id)
+        if session and not session.flushed:
+            await _browser_audio_buffer._flush(session_id)
+            return JSONResponse({"status": "flushed", "session": session_id})
+        return JSONResponse({"status": "no_active_session", "session": session_id})
+    except Exception as e:
+        return JSONResponse({"status": "error", "error": str(e)}, status_code=400)
+
 
 @app.post("/audio/browser")
 async def receive_browser_audio(request: Request):
@@ -1171,7 +1192,7 @@ async def receive_browser_audio(request: Request):
         seq = receive_browser_audio._seq.get(session_id, 0)
         receive_browser_audio._seq[session_id] = seq + 1
 
-        await _audio_buffer_manager.add_chunk(session_id, seq, audio_bytes)
+        await _browser_audio_buffer.add_chunk(session_id, seq, audio_bytes)
 
         return JSONResponse({
             "status": "ok",

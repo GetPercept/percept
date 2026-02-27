@@ -71,6 +71,7 @@ async function startCapture(streamId, sessionId, tabUrl, tabTitle) {
 }
 
 function stopCapture() {
+  const sessionId = currentSessionId;
   try {
     if (processor) processor.disconnect();
     if (audioCtx) audioCtx.close();
@@ -80,6 +81,18 @@ function stopCapture() {
   audioCtx = null;
   stream = null;
   currentSessionId = null;
+
+  // Signal the receiver to flush the buffer immediately
+  if (sessionId) {
+    fetch(PERCEPT_URL + "/audio/browser/stop", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+    }).then(() => {
+      console.log("[Percept Offscreen] Sent stop signal, buffer will flush");
+    }).catch(err => console.error("[Percept Offscreen] Stop signal error:", err));
+  }
+
   console.log("[Percept Offscreen] Stopped");
 }
 
