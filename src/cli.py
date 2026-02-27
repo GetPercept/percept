@@ -674,6 +674,74 @@ def cmd_commitments(args):
     db.close()
 
 
+def cmd_briefing(args):
+    """Generate pre-meeting context intelligence briefings."""
+    from src.briefing_engine import BriefingEngine
+    
+    engine = BriefingEngine()
+    
+    try:
+        if args.person:
+            # Generate briefing for specific person
+            briefing = engine.briefing_for_person(args.person)
+            
+            if args.format == "json":
+                print(json.dumps(briefing, indent=2))
+            else:
+                # Format as markdown for single person
+                print(f"## Briefing: {briefing.get('name', 'Unknown')}")
+                print()
+                
+                last_interaction = briefing.get('last_interaction')
+                if last_interaction:
+                    print(f"**Last spoke:** {last_interaction}")
+                else:
+                    print("**Last spoke:** No prior conversations found")
+                
+                # Recent topics
+                topics = briefing.get('recent_topics', [])
+                if topics:
+                    print(f"**Recent topics:** {', '.join(topics[:5])}")
+                
+                # Open commitments  
+                commitments = briefing.get('open_commitments', [])
+                if commitments:
+                    print("**Open commitments:**")
+                    for commitment in commitments[:3]:
+                        text = commitment.get('text', '')[:80]
+                        due_date = commitment.get('due_date', '')
+                        status_note = " (OVERDUE)" if commitment.get('status') == 'overdue' else ""
+                        print(f"- \"{text}\" ({due_date}{status_note})")
+                
+                # Key entities
+                entities = briefing.get('key_entities', [])
+                if entities:
+                    print(f"**Key context:** Frequently mentions {', '.join(entities[:3])}")
+                
+                # Talking points
+                talking_points = briefing.get('suggested_talking_points')
+                if talking_points:
+                    print("**Suggested talking points:**")
+                    for point in talking_points:
+                        print(f"- {point}")
+                        
+                print(f"\n**Conversation count:** {briefing.get('conversation_count', 0)}")
+        else:
+            # Generate briefings for upcoming meetings
+            minutes_ahead = args.minutes_ahead if not args.all else 1440  # 24 hours if --all
+            briefings = engine.generate_briefing(minutes_ahead=minutes_ahead)
+            
+            if args.format == "json":
+                print(json.dumps(briefings, indent=2))
+            else:
+                markdown_output = engine.format_briefing_markdown(briefings)
+                print(markdown_output)
+                
+    except Exception as e:
+        print(f"{C.RED}✗{C.RESET} Error generating briefing: {e}")
+        sys.exit(1)
+
+
 def cmd_reindex(args):
     """Re-embed all conversations into vector store."""
     from src.vector_store import PerceptVectorStore
@@ -891,6 +959,15 @@ def main():
     p_commit.add_argument("--speaker", default=None, help="Filter by speaker name")
     p_commit.add_argument("--id", default=None, help="Commitment ID (for fulfill/cancel)")
 
+    # briefing (CIL Level 2)
+    p_briefing = sub.add_parser("briefing", help="Generate pre-meeting context intelligence briefings")
+    p_briefing.add_argument("--person", default=None, help="Generate briefing for specific person")
+    p_briefing.add_argument("--all", action="store_true", help="Briefings for all meetings today")
+    p_briefing.add_argument("--format", choices=["markdown", "json"], default="markdown", 
+                           help="Output format (default: markdown)")
+    p_briefing.add_argument("--minutes-ahead", type=int, default=60, 
+                           help="Look for meetings within N minutes (default: 60)")
+
     # mcp
     sub.add_parser("mcp", help="Start MCP server (Model Context Protocol) for Claude Desktop")
 
@@ -945,6 +1022,7 @@ def main():
         "reindex": cmd_reindex,
         "audit": cmd_audit,
         "commitments": cmd_commitments,
+        "briefing": cmd_briefing,
         "purge": cmd_purge,
         "speakers": cmd_speakers,
         "security-log": cmd_security_log,
