@@ -5,13 +5,16 @@ import logging
 import time
 import urllib.request
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict, Any, Union
+import os
+import socket
 
 logger = logging.getLogger(__name__)
 
 NVIDIA_CREDS_PATH = Path.home() / ".config" / "nvidia" / "credentials.json"
 DEFAULT_MODEL = "nvidia/nv-embedqa-e5-v5"
 NVIDIA_ENDPOINT = "https://integrate.api.nvidia.com/v1/embeddings"
+LOCAL_MODEL = "all-MiniLM-L6-v2"
 
 
 def _load_nvidia_key(path: Path = NVIDIA_CREDS_PATH) -> Optional[str]:
@@ -24,10 +27,80 @@ def _load_nvidia_key(path: Path = NVIDIA_CREDS_PATH) -> Optional[str]:
         return None
 
 
+def _check_network_connectivity() -> bool:
+    """Check if we have network connectivity to NVIDIA API."""
+    try:
+        socket.create_connection(("integrate.api.nvidia.com", 443), timeout=3)
+        return True
+    except (socket.error, socket.timeout):
+        return False
+
+
+class LocalEmbedder:
+    """Local embedding model using sentence-transformers."""
+    
+    def __init__(self, model_name: str = LOCAL_MODEL):
+        self.model_name = model_name
+        self._model = None
+        self._embedding_dim = 384  # Known dimension for all-MiniLM-L6-v2
+        
+    def _load_model(self):
+        """Lazy-load the sentence transformer model."""
+        if self._model is None:
+            try:
+                from sentence_transformers import SentenceTransformer
+                logger.info(f"Loading local embedding model: {self.model_name}")
+                self._model = SentenceTransformer(self.model_name)
+            except ImportError:
+                logger.error("sentence-transformers not installed. Run: pip install sentence-transformers")
+                raise
+            except Exception as e:
+                logger.error(f"Failed to load local model {self.model_name}: {e}")
+                raise
+                
+    def get_embedding(self, text: str) -> Optional[List[float]]:
+        """Get embedding from local model."""
+        if not text.strip():
+            return None
+            
+        try:
+            self._load_model()
+            # Truncate to reasonable length to avoid memory issues
+            text = text[:8000]
+            embedding = self._model.encode(text, convert_to_tensor=False)
+            return embedding.tolist()
+        except Exception as e:
+            logger.warning(f"Local embedding failed: {e}")
+            return None
+            
+    def get_embeddings_batch(self, texts: List[str]) -> Optional[List[List[float]]]:
+        """Get embeddings for multiple texts."""
+        if not texts:
+            return None
+            
+        try:
+            self._load_model()
+            # Truncate texts
+            truncated = [t[:8000] for t in texts if t.strip()]
+            if not truncated:
+                return None
+                
+            embeddings = self._model.encode(truncated, convert_to_tensor=False)
+            return embeddings.tolist()
+        except Exception as e:
+            logger.warning(f"Local batch embedding failed: {e}")
+            return None
+    
+    @property
+    def embedding_dim(self) -> int:
+        """Return embedding dimension."""
+        return self._embedding_dim
+
+
 class PerceptVectorStore:
     def __init__(self, db_path: str = None, nvidia_api_key: str = None,
                  model: str = DEFAULT_MODEL, chunk_size: int = 500, chunk_overlap: int = 50):
-        """Initialize vector store with LanceDB backend and NVIDIA embeddings."""
+        """Initialize vector store with LanceDB backend and auto-fallback embeddings."""
         import lancedb
 
         if db_path is None:
@@ -39,15 +112,37 @@ class PerceptVectorStore:
         self._model = model
         self._chunk_size = chunk_size
         self._chunk_overlap = chunk_overlap
-        self._table_name = "conversations"
-        self._embedding_dim = None  # discovered on first call
-
-        if not self._api_key:
-            logger.warning("No NVIDIA API key found — vector store will be read-only")
+        
+        # Auto-detection: prefer NVIDIA if available, fallback to local
+        self._use_nvidia = self._api_key is not None and _check_network_connectivity()
+        
+        if self._use_nvidia:
+            self._table_name = "conversations_nvidia"
+            self._embedding_dim = 1024  # NVIDIA NV-EmbedQA-E5-V5 dimension
+            logger.info("Using NVIDIA NIM embeddings")
+        else:
+            self._table_name = "conversations_local"
+            self._embedding_dim = 384  # Local model dimension
+            self._local_embedder = LocalEmbedder()
+            logger.info("Using local embeddings (sentence-transformers)")
 
     # ── Embeddings ──────────────────────────────────────────────────
 
-    def _get_embedding(self, text: str, input_type: str = "passage") -> Optional[list[float]]:
+    def _get_embedding(self, text: str, input_type: str = "passage") -> Optional[List[float]]:
+        """Get embedding using auto-detection (NVIDIA preferred, local fallback)."""
+        if self._use_nvidia:
+            return self._get_nvidia_embedding(text, input_type)
+        else:
+            return self._local_embedder.get_embedding(text)
+            
+    def _get_embeddings_batch(self, texts: List[str], input_type: str = "passage") -> Optional[List[List[float]]]:
+        """Get embeddings for multiple texts using auto-detection."""
+        if self._use_nvidia:
+            return self._get_nvidia_embeddings_batch(texts, input_type)
+        else:
+            return self._local_embedder.get_embeddings_batch(texts)
+
+    def _get_nvidia_embedding(self, text: str, input_type: str = "passage") -> Optional[List[float]]:
         """Get embedding from NVIDIA NIM API."""
         if not self._api_key:
             return None
@@ -66,15 +161,13 @@ class PerceptVectorStore:
             resp = urllib.request.urlopen(req, timeout=30)
             result = json.loads(resp.read())
             vec = result["data"][0]["embedding"]
-            if self._embedding_dim is None:
-                self._embedding_dim = len(vec)
             return vec
         except Exception as e:
             logger.warning(f"NVIDIA embedding failed: {e}")
             return None
 
-    def _get_embeddings_batch(self, texts: list[str], input_type: str = "passage") -> Optional[list[list[float]]]:
-        """Get embeddings for multiple texts in one call (max ~50 per request)."""
+    def _get_nvidia_embeddings_batch(self, texts: List[str], input_type: str = "passage") -> Optional[List[List[float]]]:
+        """Get embeddings for multiple texts from NVIDIA NIM API (max ~50 per request)."""
         if not self._api_key or not texts:
             return None
         headers = {
@@ -93,8 +186,6 @@ class PerceptVectorStore:
             resp = urllib.request.urlopen(req, timeout=60)
             result = json.loads(resp.read())
             vecs = [d["embedding"] for d in sorted(result["data"], key=lambda x: x["index"])]
-            if self._embedding_dim is None and vecs:
-                self._embedding_dim = len(vecs[0])
             return vecs
         except Exception as e:
             logger.warning(f"NVIDIA batch embedding failed: {e}")
@@ -205,7 +296,7 @@ class PerceptVectorStore:
 
     # ── Search ──────────────────────────────────────────────────────
 
-    def search(self, query: str, limit: int = 10, date_filter: str = None) -> list[dict]:
+    def search(self, query: str, limit: int = 10, date_filter: str = None) -> List[Dict[str, Any]]:
         """Semantic search across all conversations."""
         tbl = self._get_table()
         if tbl is None:
@@ -239,6 +330,109 @@ class PerceptVectorStore:
                 "chunk_type": row.get("chunk_type", ""),
             })
         return out
+
+    def hybrid_search(self, query: str, limit: int = 10, alpha: float = 0.5, 
+                     date_filter: str = None) -> List[Dict[str, Any]]:
+        """Hybrid search combining FTS5 keyword + vector semantic results using Reciprocal Rank Fusion.
+        
+        Args:
+            query: Search query
+            limit: Maximum results to return
+            alpha: 0 = pure keyword, 1 = pure semantic, 0.5 = balanced
+            date_filter: Optional date filter (YYYY-MM-DD)
+            
+        Returns:
+            Unified ranked results with RRF scores
+        """
+        # Get FTS5 keyword results
+        keyword_results = []
+        try:
+            from .database import PerceptDB
+            db = PerceptDB()
+            fts_results = db.search_utterances(query, limit=limit * 2)
+            db.close()
+            
+            for i, result in enumerate(fts_results):
+                keyword_results.append({
+                    "conversation_id": result.get("conversation_id", ""),
+                    "text": result.get("text", ""),
+                    "score": 1.0 / (i + 1),  # Rank-based score
+                    "date": "",  # FTS doesn't have date directly
+                    "speakers": "[]",
+                    "chunk_type": "fts",
+                    "source": "keyword",
+                    "rank": i + 1
+                })
+        except Exception as e:
+            logger.warning(f"Keyword search failed: {e}")
+            
+        # Get semantic vector results
+        semantic_results = []
+        tbl = self._get_table()
+        if tbl is not None:
+            vec = self._get_embedding(query, input_type="query")
+            if vec is not None:
+                try:
+                    q = tbl.search(vec).limit(limit * 2)
+                    results = q.to_pandas()
+                    
+                    if date_filter and "date" in results.columns:
+                        results = results[results["date"] == date_filter]
+                    
+                    for i, (_, row) in enumerate(results.iterrows()):
+                        semantic_results.append({
+                            "conversation_id": row.get("conversation_id", ""),
+                            "text": row.get("text", ""),
+                            "score": 1.0 / (i + 1),  # Rank-based score  
+                            "date": row.get("date", ""),
+                            "speakers": row.get("speakers", "[]"),
+                            "chunk_type": row.get("chunk_type", ""),
+                            "source": "semantic",
+                            "rank": i + 1,
+                            "vector_distance": float(row.get("_distance", 0))
+                        })
+                except Exception as e:
+                    logger.warning(f"Semantic search failed: {e}")
+        
+        # Handle edge cases
+        if not keyword_results and not semantic_results:
+            return []
+        elif not semantic_results:
+            # Fall back to FTS5 only
+            return keyword_results[:limit]
+        elif not keyword_results:
+            # Use semantic only
+            return semantic_results[:limit]
+            
+        # Reciprocal Rank Fusion (RRF)
+        rrf_scores = {}
+        k = 60  # RRF constant
+        
+        # Add keyword results to RRF
+        if alpha < 1.0:
+            for result in keyword_results:
+                key = (result["conversation_id"], result["text"][:100])
+                rrf_scores[key] = rrf_scores.get(key, {"result": result, "score": 0})
+                rrf_scores[key]["score"] += (1 - alpha) * (1 / (k + result["rank"]))
+        
+        # Add semantic results to RRF
+        if alpha > 0.0:
+            for result in semantic_results:
+                key = (result["conversation_id"], result["text"][:100])
+                rrf_scores[key] = rrf_scores.get(key, {"result": result, "score": 0})
+                rrf_scores[key]["score"] += alpha * (1 / (k + result["rank"]))
+        
+        # Sort by RRF score and return
+        sorted_results = sorted(rrf_scores.values(), key=lambda x: x["score"], reverse=True)
+        
+        final_results = []
+        for item in sorted_results[:limit]:
+            result = item["result"].copy()
+            result["rrf_score"] = item["score"]
+            result["source"] = "hybrid"
+            final_results.append(result)
+            
+        return final_results
 
     # ── Context retrieval ───────────────────────────────────────────
 

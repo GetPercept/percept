@@ -259,27 +259,84 @@ def cmd_actions(args):
 
 
 def cmd_search(args):
-    """Semantic search over conversations."""
+    """Search over conversations with multiple modes."""
     from src.vector_store import PerceptVectorStore
+    from src.database import PerceptDB
+    
     vs = PerceptVectorStore()
+    db = PerceptDB()
 
-    if not vs._get_table():
-        print(f"{C.RED}No vector index found. Run: PYTHONPATH=. .venv/bin/python scripts/index_vectors.py{C.RESET}")
-        return
+    # Determine search mode
+    mode = getattr(args, 'mode', 'hybrid')
+    
+    if mode == "keyword":
+        # FTS5 keyword search only
+        results = db.search_utterances(args.query, limit=args.limit)
+        db.close()
+        
+        # Convert to standard format
+        formatted_results = []
+        for i, r in enumerate(results):
+            formatted_results.append({
+                "conversation_id": r.get("conversation_id", ""),
+                "text": r.get("text", ""),
+                "score": 1.0 / (i + 1),
+                "date": "",
+                "speakers": "[]", 
+                "chunk_type": "keyword",
+                "source": "keyword"
+            })
+        results = formatted_results
+        
+    elif mode == "semantic":
+        # Vector semantic search only
+        if not vs._get_table():
+            print(f"{C.RED}No vector index found. Run: percept reindex{C.RESET}")
+            db.close()
+            return
+        results = vs.search(args.query, limit=args.limit, date_filter=args.date)
+        
+    else:  # hybrid (default)
+        # Hybrid search
+        if not vs._get_table():
+            print(f"{C.YELLOW}No vector index found, falling back to keyword search. Run: percept reindex{C.RESET}")
+            results = db.search_utterances(args.query, limit=args.limit)
+            db.close()
+            # Convert to standard format
+            formatted_results = []
+            for i, r in enumerate(results):
+                formatted_results.append({
+                    "conversation_id": r.get("conversation_id", ""),
+                    "text": r.get("text", ""),
+                    "score": 1.0 / (i + 1),
+                    "date": "",
+                    "speakers": "[]",
+                    "chunk_type": "keyword", 
+                    "source": "keyword"
+                })
+            results = formatted_results
+        else:
+            results = vs.hybrid_search(args.query, limit=args.limit, alpha=0.5, date_filter=args.date)
+    
+    db.close()
 
-    results = vs.search(args.query, limit=args.limit, date_filter=args.date)
     if not results:
         print(f"{C.DIM}No results for: {args.query}{C.RESET}")
         return
 
-    print(f"\n{C.BOLD}{C.CYAN}🔍 Search: {args.query}{C.RESET}\n")
+    mode_emoji = {"keyword": "📝", "semantic": "🧠", "hybrid": "🔍"}
+    print(f"\n{C.BOLD}{C.CYAN}{mode_emoji.get(mode, '🔍')} Search ({mode}): {args.query}{C.RESET}\n")
+    
     for i, r in enumerate(results, 1):
         score = r.get("score", 0)
+        rrf_score = r.get("rrf_score")
         date = r.get("date", "")
         cid = r.get("conversation_id", "")
         ctype = r.get("chunk_type", "")
+        source = r.get("source", "")
         text = r.get("text", "").replace("\n", " ")[:120]
         speakers = r.get("speakers", "[]")
+        
         if isinstance(speakers, str):
             try:
                 speakers = json.loads(speakers)
@@ -287,8 +344,12 @@ def cmd_search(args):
                 speakers = []
         spk_str = ", ".join(speakers) if speakers else ""
 
-        score_color = C.GREEN if score < 0.5 else C.YELLOW if score < 1.0 else C.DIM
-        print(f"  {C.BOLD}{i}.{C.RESET} {score_color}[{score:.3f}]{C.RESET} {C.DIM}{date}{C.RESET} {C.DIM}({ctype}){C.RESET}")
+        # Show appropriate score
+        display_score = rrf_score if rrf_score is not None else score
+        score_color = C.GREEN if display_score > 0.1 else C.YELLOW if display_score > 0.05 else C.DIM
+        
+        source_indicator = f" {C.DIM}({source}){C.RESET}" if source and mode == "hybrid" else ""
+        print(f"  {C.BOLD}{i}.{C.RESET} {score_color}[{display_score:.3f}]{C.RESET} {C.DIM}{date}{C.RESET} {C.DIM}({ctype}){C.RESET}{source_indicator}")
         if spk_str:
             print(f"     {C.DIM}Speakers: {spk_str}{C.RESET}")
         print(f"     {text}")
@@ -613,6 +674,55 @@ def cmd_commitments(args):
     db.close()
 
 
+def cmd_reindex(args):
+    """Re-embed all conversations into vector store."""
+    from src.vector_store import PerceptVectorStore
+    from src.database import PerceptDB
+    
+    print(f"\n{C.BOLD}{C.CYAN}🔄 Reindexing Conversations{C.RESET}\n")
+    
+    vs = PerceptVectorStore()
+    db = PerceptDB()
+    
+    # Show current embedder status
+    embedder_type = "NVIDIA NIM" if vs._use_nvidia else "Local (sentence-transformers)"
+    print(f"  Using: {C.BOLD}{embedder_type}{C.RESET}")
+    print(f"  Model: {vs._model if vs._use_nvidia else vs._local_embedder.model_name}")
+    print(f"  Dimensions: {vs._embedding_dim}")
+    print()
+    
+    # Check if force rebuild needed
+    existing_stats = vs.stats()
+    if existing_stats["total_conversations"] > 0 and not args.force:
+        print(f"  Found {existing_stats['total_conversations']} indexed conversations")
+        print(f"  Use --force to rebuild the entire index")
+        print()
+    
+    # Perform bulk indexing
+    start_time = time.time()
+    try:
+        results = vs.index_all(db=db)
+        elapsed = time.time() - start_time
+        
+        print(f"  {C.GREEN}✓{C.RESET} Reindexing complete in {elapsed:.1f}s")
+        print(f"  Total conversations: {results['total']}")
+        print(f"  Newly indexed: {results['indexed']}")
+        print(f"  Skipped (already indexed): {results['skipped']}")
+        if results['failed'] > 0:
+            print(f"  {C.RED}Failed: {results['failed']}{C.RESET}")
+            
+        # Show final stats
+        final_stats = vs.stats()
+        print(f"\n  Final index: {final_stats['total_chunks']} chunks, {final_stats['total_conversations']} conversations")
+        
+    except Exception as e:
+        print(f"  {C.RED}✗{C.RESET} Reindexing failed: {e}")
+    finally:
+        db.close()
+    
+    print()
+
+
 def cmd_purge(args):
     """Purge data."""
     from src.database import PerceptDB
@@ -743,10 +853,16 @@ def main():
     sub.add_parser("actions", help="List recent actions")
 
     # search
-    p_search = sub.add_parser("search", help="Semantic search over conversations")
+    p_search = sub.add_parser("search", help="Search over conversations")
     p_search.add_argument("query", help="Search query")
     p_search.add_argument("--limit", type=int, default=10)
     p_search.add_argument("--date", default=None, help="Filter by date (YYYY-MM-DD)")
+    p_search.add_argument("--mode", choices=["keyword", "semantic", "hybrid"], default="hybrid", 
+                          help="Search mode: keyword (FTS5), semantic (vector), or hybrid (default)")
+
+    # reindex
+    p_reindex = sub.add_parser("reindex", help="Re-embed all conversations into vector store")
+    p_reindex.add_argument("--force", action="store_true", help="Force rebuild entire index")
 
     # config
     p_cfg = sub.add_parser("config", help="Show/edit configuration")
@@ -826,6 +942,7 @@ def main():
         "actions": cmd_actions,
         "config": cmd_config,
         "search": cmd_search,
+        "reindex": cmd_reindex,
         "audit": cmd_audit,
         "commitments": cmd_commitments,
         "purge": cmd_purge,
