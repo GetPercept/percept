@@ -103,8 +103,8 @@ class TestAudioBufferManager:
     @pytest.mark.asyncio
     async def test_max_buffer_forces_flush(self, manager, callback):
         # Fill to max buffer
-        chunk_size = BYTES_PER_SECOND * 10  # 10 seconds per chunk
-        for i in range(4):  # 40 seconds > MAX_BUFFER_DURATION (30s)
+        chunk_size = BYTES_PER_SECOND * 60  # 60 seconds per chunk
+        for i in range(6):  # 360 seconds > MAX_BUFFER_DURATION (300s)
             await manager.add_chunk("sess4", i, b"\x00" * chunk_size)
             if callback.await_count > 0:
                 break
