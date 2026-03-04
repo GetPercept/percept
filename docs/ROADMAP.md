@@ -1,6 +1,6 @@
 # Percept Roadmap
 
-Last updated: 2026-02-24
+Last updated: 2026-03-04
 
 ---
 
@@ -32,7 +32,7 @@ Last updated: 2026-02-24
 - [x] Watch app prototype (mock mode for simulator)
 - [x] NVIDIA Parakeet ASR tested via gRPC
 
-## Phase 2: Semantic Search 🔄 IN PROGRESS
+## Phase 2: Semantic Search ✅ DONE
 
 **NVIDIA NeMo Retriever embeddings + vector search**
 
@@ -44,15 +44,15 @@ Last updated: 2026-02-24
 - [x] Dashboard search with vector fallback
 - [x] Intent parser uses semantic context for ambiguous references
 - [x] Bulk indexing script (`scripts/index_vectors.py`)
-- [ ] Offline embedding fallback (all-MiniLM-L6-v2)
-- [ ] Auto-indexing reliability (handle API failures gracefully)
+- [x] Offline embedding fallback (all-MiniLM-L6-v2 via sentence-transformers)
+- [x] Auto-indexing reliability (retry w/ exponential backoff, failed chunk queue)
 - [ ] Embedding quality evaluation on real conversations
 
-## Phase 3: Safety & Guardrails 📋 PLANNED
+## Phase 3: Safety & Guardrails 🔄 IN PROGRESS
 
 **NVIDIA NeMo Guardrails**
 
-- [ ] Content filtering on transcripts (PII detection)
+- [x] Content filtering on transcripts (PII detection + redaction)
 - [ ] Action confirmation guardrails (high-stakes actions require confirmation)
 - [ ] Sensitive topic detection and handling
 - [ ] Rate limiting on agent actions

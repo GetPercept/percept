@@ -69,11 +69,12 @@ Say **"Hey Jarvis, remind me to check email"** and watch it work.
 - 📊 **FTS5 Full-Text Search** — Porter-stemmed search across all utterances
 - ⏰ **TTL Auto-Purge** — Configurable retention: utterances 30d, summaries 90d, relationships 180d
 
-### Security
+### Security & Privacy
 - 🔐 **Speaker Authorization** — Allowlist of authorized speakers. Only approved voices trigger commands
 - 🔑 **Webhook Authentication** — Bearer token or URL token (`?token=`) on all webhook endpoints
 - 📋 **Security Audit Log** — All blocked attempts logged with timestamp, speaker, transcript snippet, and reason
 - 🛡️ **Command Safety Classifier** — 6-category pattern matching blocks exfiltration, credential access, destructive commands, network changes, info leaks, and prompt injection. Pen tested: 7/7 attacks blocked
+- 🕵️ **PII Detection & Redaction** — Auto-scans transcripts for SSN, credit cards, phone numbers, emails, DOB. Redacts before storage. Luhn-validated card detection
 - 🏠 **Local-First** — Audio and transcripts never leave your machine. No cloud dependency
 - 📖 **[Full security documentation →](SECURITY.md)**
 
