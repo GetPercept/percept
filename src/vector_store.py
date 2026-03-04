@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any, Union
 import os
 import socket
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,24 @@ NVIDIA_CREDS_PATH = Path.home() / ".config" / "nvidia" / "credentials.json"
 DEFAULT_MODEL = "nvidia/nv-embedqa-e5-v5"
 NVIDIA_ENDPOINT = "https://integrate.api.nvidia.com/v1/embeddings"
 LOCAL_MODEL = "all-MiniLM-L6-v2"
+
+# Retry constants
+MAX_RETRIES = 3
+RETRY_BASE_DELAY = 1.0  # seconds, doubles each attempt
+
+
+def _retry_with_backoff(fn, max_retries: int = MAX_RETRIES, base_delay: float = RETRY_BASE_DELAY):
+    """Execute fn() with exponential backoff. Returns result or raises last exception."""
+    last_exc = None
+    for attempt in range(max_retries):
+        try:
+            return fn()
+        except Exception as e:
+            last_exc = e
+            delay = base_delay * (2 ** attempt)
+            logger.warning(f"Retry {attempt + 1}/{max_retries} failed: {e}. Waiting {delay:.1f}s")
+            time.sleep(delay)
+    raise last_exc
 
 
 def _load_nvidia_key(path: Path = NVIDIA_CREDS_PATH) -> Optional[str]:
@@ -115,6 +134,10 @@ class PerceptVectorStore:
         
         # Auto-detection: prefer NVIDIA if available, fallback to local
         self._use_nvidia = self._api_key is not None and _check_network_connectivity()
+        
+        # Queue for chunks that failed embedding (for later retry)
+        self._failed_chunks: List[Dict[str, Any]] = []
+        self._failed_lock = threading.Lock()
         
         if self._use_nvidia:
             self._table_name = "conversations_nvidia"
@@ -235,9 +258,11 @@ class PerceptVectorStore:
     def index_conversation(self, conversation_id: str, transcript: str,
                            summary: str = None, speakers: list = None,
                            date: str = None, topics: list = None) -> int:
-        """Embed and store a conversation's chunks. Returns number of chunks indexed."""
-        import pyarrow as pa
-
+        """Embed and store a conversation's chunks with retry + failure queuing.
+        
+        Returns number of chunks indexed. Failed batches are queued for later retry
+        via retry_failed(), and logged but never crash the pipeline.
+        """
         # Skip if already indexed
         if conversation_id in self._indexed_conversation_ids():
             logger.debug(f"Already indexed: {conversation_id}")
@@ -253,31 +278,61 @@ class PerceptVectorStore:
         if not chunks:
             return 0
 
-        # Get embeddings in batches of 20
-        all_vecs = []
-        batch_size = 20
-        for i in range(0, len(chunks), batch_size):
-            batch = chunks[i:i + batch_size]
-            vecs = self._get_embeddings_batch(batch, input_type="passage")
-            if vecs is None:
-                logger.warning(f"Embedding failed for {conversation_id}, batch {i}")
-                return 0
-            all_vecs.extend(vecs)
-            if i + batch_size < len(chunks):
-                time.sleep(0.1)  # rate limit
-
-        if len(all_vecs) != len(chunks):
-            logger.warning(f"Embedding count mismatch for {conversation_id}")
-            return 0
-
         speakers_str = json.dumps(speakers) if speakers else "[]"
         topics_str = json.dumps(topics) if topics else "[]"
 
+        # Get embeddings in batches of 20 with retry
+        all_vecs = []
+        batch_size = 20
+        failed_batch_chunks = []
+        failed_batch_types = []
+
+        for i in range(0, len(chunks), batch_size):
+            batch = chunks[i:i + batch_size]
+            batch_types = chunk_types[i:i + batch_size]
+
+            try:
+                vecs = _retry_with_backoff(
+                    lambda b=batch: self._get_embeddings_batch(b, input_type="passage")
+                )
+            except Exception as e:
+                logger.error(f"Embedding failed after {MAX_RETRIES} retries for {conversation_id} batch {i}: {e}")
+                vecs = None
+
+            if vecs is None or len(vecs) != len(batch):
+                logger.warning(f"Queuing {len(batch)} failed chunks from {conversation_id} for later retry")
+                failed_batch_chunks.extend(batch)
+                failed_batch_types.extend(batch_types)
+                # Pad with None so indexing stays aligned
+                all_vecs.extend([None] * len(batch))
+            else:
+                all_vecs.extend(vecs)
+
+            if i + batch_size < len(chunks):
+                time.sleep(0.1)  # rate limit
+
+        # Queue failed chunks for later retry
+        if failed_batch_chunks:
+            with self._failed_lock:
+                self._failed_chunks.append({
+                    "conversation_id": conversation_id,
+                    "chunks": failed_batch_chunks,
+                    "chunk_types": failed_batch_types,
+                    "speakers": speakers_str,
+                    "topics": topics_str,
+                    "date": date or "",
+                })
+            logger.info(f"Queued {len(failed_batch_chunks)} failed chunks for {conversation_id}")
+
+        # Build records from successfully embedded chunks only
         records = []
-        for idx, (chunk, vec, ctype) in enumerate(zip(chunks, all_vecs, chunk_types)):
+        chunk_idx = 0
+        for chunk, vec, ctype in zip(chunks, all_vecs, chunk_types):
+            if vec is None:
+                continue  # Skip failed embeddings
             records.append({
                 "conversation_id": conversation_id,
-                "chunk_index": idx,
+                "chunk_index": chunk_idx,
                 "chunk_type": ctype,
                 "text": chunk,
                 "date": date or "",
@@ -285,14 +340,90 @@ class PerceptVectorStore:
                 "topics": topics_str,
                 "vector": vec,
             })
+            chunk_idx += 1
 
-        tbl = self._get_table()
-        if tbl is None:
-            self._db.create_table(self._table_name, records)
-        else:
-            tbl.add(records)
+        if not records:
+            logger.warning(f"No chunks successfully embedded for {conversation_id}")
+            return 0
+
+        try:
+            tbl = self._get_table()
+            if tbl is None:
+                self._db.create_table(self._table_name, records)
+            else:
+                tbl.add(records)
+        except Exception as e:
+            logger.error(f"Failed to write to LanceDB for {conversation_id}: {e}")
+            return 0
 
         return len(records)
+
+    def retry_failed(self) -> dict:
+        """Retry embedding and indexing for previously failed chunks.
+        
+        Returns dict with counts: attempted, succeeded, still_failed.
+        """
+        with self._failed_lock:
+            pending = list(self._failed_chunks)
+            self._failed_chunks.clear()
+
+        if not pending:
+            return {"attempted": 0, "succeeded": 0, "still_failed": 0}
+
+        attempted = 0
+        succeeded = 0
+        still_failed_items = []
+
+        for item in pending:
+            chunks = item["chunks"]
+            chunk_types = item["chunk_types"]
+            attempted += len(chunks)
+
+            try:
+                vecs = _retry_with_backoff(
+                    lambda c=chunks: self._get_embeddings_batch(c, input_type="passage")
+                )
+            except Exception:
+                vecs = None
+
+            if vecs is None or len(vecs) != len(chunks):
+                still_failed_items.append(item)
+                continue
+
+            records = []
+            for idx, (chunk, vec, ctype) in enumerate(zip(chunks, vecs, chunk_types)):
+                records.append({
+                    "conversation_id": item["conversation_id"],
+                    "chunk_index": idx,
+                    "chunk_type": ctype,
+                    "text": chunk,
+                    "date": item["date"],
+                    "speakers": item["speakers"],
+                    "topics": item["topics"],
+                    "vector": vec,
+                })
+
+            try:
+                tbl = self._get_table()
+                if tbl is None:
+                    self._db.create_table(self._table_name, records)
+                else:
+                    tbl.add(records)
+                succeeded += len(records)
+            except Exception as e:
+                logger.error(f"Retry write failed for {item['conversation_id']}: {e}")
+                still_failed_items.append(item)
+
+        with self._failed_lock:
+            self._failed_chunks.extend(still_failed_items)
+
+        result = {
+            "attempted": attempted,
+            "succeeded": succeeded,
+            "still_failed": sum(len(i["chunks"]) for i in still_failed_items),
+        }
+        logger.info(f"Retry results: {result}")
+        return result
 
     # ── Search ──────────────────────────────────────────────────────
 

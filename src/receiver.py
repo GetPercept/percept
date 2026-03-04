@@ -486,6 +486,24 @@ async def _flush_transcript(session_key: str):
     except Exception as e:
         logger.error(f"Failed to save conversation: {e}")
 
+    # 2a-PII. Scan for PII before storing
+    try:
+        from src.pii_detector import scan_text as _pii_scan
+        pii_result = _pii_scan(full_transcript)
+        if pii_result.has_pii:
+            pii_types = ", ".join(pii_result.pii_types_found)
+            logger.warning(f"PII detected in transcript: {pii_types} ({len(pii_result.matches)} matches)")
+            # Log PII event (don't block storage — just flag it)
+            for m in pii_result.matches:
+                _db.log_security_event(
+                    speaker_id=list(segment_speakers)[0] if segment_speakers else "unknown",
+                    transcript_snippet=full_transcript[max(0, m.start - 20):m.end + 20],
+                    reason="pii_detected",
+                    details=f"{m.pii_type} at position {m.start}-{m.end}",
+                )
+    except Exception as e:
+        logger.warning(f"PII scan failed (non-blocking): {e}")
+
     # 2b. Save to SQLite database
     try:
         now = datetime.now()

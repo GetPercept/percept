@@ -78,7 +78,7 @@ Last updated: 2026-02-24
 - [x] Claude Desktop integration verified
 - [x] 216 tests passing
 - [x] Demo video recorded
-- [ ] PyPI package publish (`pip install getpercept`)
+- [x] PyPI package publish (`pip install getpercept`) — v0.1.1 live
 - [ ] MCP Registry listing
 
 ### Watch App
@@ -110,7 +110,7 @@ Last updated: 2026-02-24
 - [x] awesome-mcp-servers PR submitted
 - [x] OpenClaw Discord #showcase announcement
 - [x] Omi Discord showcase announcement
-- [ ] PyPI package (`pip install getpercept`)
+- [x] PyPI package (`pip install getpercept`) — v0.1.1 live
 - [ ] GitHub Actions CI
 - [ ] HN launch post (deferred until App Store approval)
 - [ ] Product Hunt launch (target week of Mar 2)

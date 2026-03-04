@@ -41,6 +41,9 @@ nvidia = [
     "grpcio>=1.60.0",
     "protobuf>=4.25.0",
 ]
+local = [
+    "sentence-transformers>=2.2.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/GetPercept/percept"
