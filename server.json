@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.getpercept/percept",
+  "title": "Percept \u2014 Ambient Voice Intelligence",
+  "description": "Give your AI agent ears \u2014 ambient voice intelligence with 8 MCP tools for Claude Desktop",
+  "version": "0.1.2",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "getpercept",
+      "version": "0.1.2",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

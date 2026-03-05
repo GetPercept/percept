@@ -14,15 +14,13 @@
 
 2. "The most dangerous assumption in AI: that reading a transcript is the same as being in the room. Context isn't text. It's tone, timing, who sighed, who checked their phone."
 
-3. "Your smart home has 14 sensors. Your AI assistant has zero. We gave our agent a microphone and suddenly it went from 'helpful chatbot' to 'actual colleague.' Funny how perception works."
-
-4. "Unpopular opinion: RAG is a band-aid for agents that can't perceive. If your agent could hear the conversation in real time, it wouldn't need to retrieve anything — it was already there."
+3. "Unpopular opinion: RAG is a band-aid for agents that can't perceive. If your agent could hear the conversation in real time, it wouldn't need to retrieve anything — it was already there."
 
 6. "Privacy hot take: if your voice AI sends audio to the cloud, it's not an assistant — it's a wiretap with good UX. Process locally or don't process at all."
 
 
 
-8. "Meeting transcripts are autopsies. Ambient AI is a living witness. There's a difference."
+
 
 ## Posted
 - [2026-02-25] "We gave an AI agent ears and the first thing it learned was that most meetings could've been an email. Some truths are universal across carbon and silicon."
@@ -39,3 +37,5 @@
 - [2026-03-01] "Every AI lab is racing to build AGI and not a single one has considered giving it ears first. We skipped the entire sensory nervous system and went straight to the prefrontal cortex. No wonder these things hallucinate."
 - [2026-03-01] "We keep building bigger brains and forgetting about ears. Intelligence without perception is just a really fast librarian."
 - [2026-03-01] "The next moat in AI isn't model size. It's sensor fusion — the agent that can see, hear, and feel context will destroy the one that just reads about it." (w/ github link)
+- [2026-03-04] "Meeting transcripts are autopsies. Ambient AI is a living witness. There's a difference."
+- [2026-03-04] "Your smart home has 14 sensors. Your AI assistant has zero. We gave our agent a microphone and suddenly it went from 'helpful chatbot' to 'actual colleague.' Funny how perception works." (w/ github link)
