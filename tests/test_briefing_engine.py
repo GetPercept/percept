@@ -46,7 +46,7 @@ def mock_db():
             "id": "conv1",
             "date": "2026-02-25",
             "summary": "Discussed FHIR integration progress and API documentation",
-            "speakers": "Rob Martinez, GetPercept Team"
+            "speakers": "Rob Martinez, Example User"
         }
     ]
     return db
@@ -133,7 +133,7 @@ def test_get_upcoming_meetings_success(mock_subprocess):
                 "end": {"dateTime": "2026-02-27T12:00:00"},
                 "attendees": [
                     {"email": "rob@vectorcare.com", "displayName": "Rob Martinez"},
-                    {"email": "user@example.com", "displayName": "GetPercept Team"}
+                    {"email": "user@example.com", "displayName": "Example User"}
                 ]
             }
         ])
