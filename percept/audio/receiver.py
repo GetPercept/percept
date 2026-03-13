@@ -94,7 +94,7 @@ async def _send_imessage(text: str):
             return
             
         env = os.environ.copy()  # Inherit system PATH
-        _imsg_target = _db.get_setting("dispatch_target", "+10000000000")
+        _imsg_target = _db.get_setting("dispatch_target", os.environ.get("PERCEPT_DISPATCH_TARGET", ""))
         proc = await asyncio.create_subprocess_exec(
             imsg_path, "send", "--to", _imsg_target, "--text", text,
             stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
@@ -155,7 +155,7 @@ def _lookup_contact(name: str, field: str = "email") -> str | None:
                     return result
         # Fall back to dispatch_target setting for phone
         if field == "phone":
-            return _db.get_setting("dispatch_target", "+10000000000")
+            return _db.get_setting("dispatch_target", os.environ.get("PERCEPT_DISPATCH_TARGET", ""))
         return None
 
     # Try new address book database first
@@ -656,7 +656,7 @@ async def _flush_transcript(session_key: str):
                 return
                 
             env = os.environ.copy()  # Inherit system PATH
-            _dispatch_target = _db.get_setting("dispatch_target", "+10000000000")
+            _dispatch_target = _db.get_setting("dispatch_target", os.environ.get("PERCEPT_DISPATCH_TARGET", ""))
             _dispatch_channel = _db.get_setting("dispatch_channel", "imessage")
 
             # Route by action type — lightweight actions use message send,

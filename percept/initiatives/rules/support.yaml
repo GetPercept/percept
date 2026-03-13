@@ -15,7 +15,7 @@ rules:
         value: enterprise
     action:
       action_type: escalate
-      target: "iMessage:+10000000000"
+      target: "${PERCEPT_NOTIFY_TARGET}"
       template: "Enterprise ticket #{ticket_id} open {hours}h without response."
       require_approval: false
     cooldown_minutes: 120

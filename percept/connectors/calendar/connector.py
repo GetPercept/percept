@@ -23,7 +23,7 @@ MOCK_EVENTS = [
         "summary": "Weekly Team Standup",
         "start": "2026-03-12T10:00:00-07:00",
         "end": "2026-03-12T10:30:00-07:00",
-        "organizer": {"name": "GetPercept Team", "email": "user@example.com"},
+        "organizer": {"name": "Example User", "email": "user@example.com"},
         "attendees": [
             {"name": "Alice Johnson", "email": "alice@vectorcare.com", "status": "accepted"},
             {"name": "Bob Smith", "email": "bob@vectorcare.com", "status": "tentative"},
@@ -36,7 +36,7 @@ MOCK_EVENTS = [
         "summary": "Investor Call — Series A Update",
         "start": "2026-03-13T14:00:00-07:00",
         "end": "2026-03-13T15:00:00-07:00",
-        "organizer": {"name": "GetPercept Team", "email": "user@example.com"},
+        "organizer": {"name": "Example User", "email": "user@example.com"},
         "attendees": [
             {"name": "Carol Chen", "email": "carol@vc-firm.com", "status": "accepted"},
         ],
@@ -50,7 +50,7 @@ MOCK_EVENTS = [
         "end": "2026-03-14T12:00:00-07:00",
         "organizer": {"name": "Carol Chen", "email": "carol@vectorcare.com"},
         "attendees": [
-            {"name": "GetPercept Team", "email": "user@example.com", "status": "accepted"},
+            {"name": "Example User", "email": "user@example.com", "status": "accepted"},
             {"name": "Eve Park", "email": "eve@vectorcare.com", "status": "needsAction"},
         ],
         "location": "",

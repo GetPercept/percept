@@ -14,7 +14,7 @@ rules:
         value: 4
     action:
       action_type: notify
-      target: "iMessage:+10000000000"
+      target: "${PERCEPT_NOTIFY_TARGET}"
       template: "Your readiness is {readiness}. You have {count} meetings today. Consider rescheduling non-critical ones."
       require_approval: false
     cooldown_minutes: 480

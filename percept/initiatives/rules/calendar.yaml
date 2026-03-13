@@ -25,7 +25,7 @@ rules:
         operator: exists
     action:
       action_type: notify
-      target: "iMessage:+10000000000"
+      target: "${PERCEPT_NOTIFY_TARGET}"
       template: "You're double-booked at {time}: {event1} vs {event2}. Which takes priority?"
       require_approval: false
     cooldown_minutes: 60

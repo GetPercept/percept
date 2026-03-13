@@ -10,7 +10,7 @@ rules:
         time_window_minutes: 1440
     action:
       action_type: notify
-      target: "iMessage:+10000000000"
+      target: "${PERCEPT_NOTIFY_TARGET}"
       template: "PR #{pr_number} by {author} has been waiting for review for {hours}h."
       require_approval: false
     cooldown_minutes: 240
@@ -33,7 +33,7 @@ rules:
         value: in_progress
     action:
       action_type: notify
-      target: "iMessage:+10000000000"
+      target: "${PERCEPT_NOTIFY_TARGET}"
       template: "Linear ticket {ticket_id} ({title}) has been in-progress for {days} days with no updates."
       require_approval: false
     cooldown_minutes: 1440

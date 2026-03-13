@@ -37,3 +37,11 @@ research/
 docs/CIL_ROADMAP.md
 docs/CLI_PLAYBOOK.md
 .mcpregistry_*
+
+# Personal data — NEVER commit
+data/contacts.json
+data/conversations/
+data/summaries/
+data/*.db
+data/*.db-shm
+data/*.db-wal

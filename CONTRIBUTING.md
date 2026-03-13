@@ -11,7 +11,7 @@ Welcome! Percept gives AI agents ears — ambient voice intelligence for OpenCla
 ## Maintainers
 
 - **GetPercept Team** - Creator
-  - GitHub: [@getpercept](https://github.com/getpercept) · X: [@jarv31168](https://x.com/jarv31168)
+  - GitHub: [@getpercept](https://github.com/getpercept) · X: [@getpercept](https://x.com/getpercept)
 
 ## How to Contribute
 

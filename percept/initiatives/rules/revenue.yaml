@@ -9,7 +9,7 @@ rules:
         value: 200
     action:
       action_type: notify
-      target: "iMessage:+10000000000"
+      target: "${PERCEPT_NOTIFY_TARGET}"
       template: "{customer} usage up {percent}%. They're on {plan} plan. Expansion opportunity?"
       require_approval: false
     cooldown_minutes: 1440
