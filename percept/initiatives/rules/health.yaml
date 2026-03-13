@@ -1,0 +1,22 @@
+rules:
+  - name: health_aware_scheduling
+    description: "Alert when low Oura readiness + heavy meeting day"
+    conditions:
+      - source: oura
+        signal_type: low_readiness
+        operator: lt
+        field: readiness
+        value: 60
+      - source: calendar
+        signal_type: meetings_today
+        operator: gt
+        field: count
+        value: 4
+    action:
+      action_type: notify
+      target: "iMessage:+10000000000"
+      template: "Your readiness is {readiness}. You have {count} meetings today. Consider rescheduling non-critical ones."
+      require_approval: false
+    cooldown_minutes: 480
+    priority: 2
+    enabled: true

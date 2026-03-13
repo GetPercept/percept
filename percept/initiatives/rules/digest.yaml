@@ -1,0 +1,17 @@
+rules:
+  - name: eod_digest
+    description: "End-of-day summary of activity"
+    conditions:
+      - source: system
+        signal_type: time_trigger
+        operator: eq
+        field: value
+        value: "17:00"
+    action:
+      action_type: execute
+      target: "system"
+      template: "Compile: emails received, PRs merged, tickets closed, meetings attended, health score."
+      require_approval: false
+    cooldown_minutes: 720
+    priority: 5
+    enabled: true

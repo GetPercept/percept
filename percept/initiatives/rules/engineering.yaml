@@ -1,0 +1,41 @@
+rules:
+  - name: pr_review_stale
+    description: "PR waiting for review too long"
+    conditions:
+      - source: github
+        signal_type: pr_pending_review
+        operator: gt
+        field: hours
+        value: 24
+        time_window_minutes: 1440
+    action:
+      action_type: notify
+      target: "iMessage:+10000000000"
+      template: "PR #{pr_number} by {author} has been waiting for review for {hours}h."
+      require_approval: false
+    cooldown_minutes: 240
+    priority: 3
+    enabled: true
+
+  - name: stale_linear_ticket
+    description: "In-progress ticket with no updates for 3+ days"
+    conditions:
+      - source: linear
+        signal_type: ticket_no_update
+        operator: gt
+        field: days
+        value: 3
+        time_window_minutes: 4320
+      - source: linear
+        signal_type: ticket_status
+        operator: eq
+        field: status
+        value: in_progress
+    action:
+      action_type: notify
+      target: "iMessage:+10000000000"
+      template: "Linear ticket {ticket_id} ({title}) has been in-progress for {days} days with no updates."
+      require_approval: false
+    cooldown_minutes: 1440
+    priority: 4
+    enabled: true

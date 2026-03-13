@@ -1,0 +1,7 @@
+{
+  "name": "{{NAME}}",
+  "version": "0.1.0",
+  "auth_type": "{{AUTH_TYPE}}",
+  "description": "{{DESCRIPTION}}",
+  "settings": {}
+}

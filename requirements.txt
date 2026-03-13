@@ -1,9 +1,24 @@
+# Core
+requests>=2.28
+pyyaml>=6.0
+
+# Audio pipeline
 fastapi>=0.104.0
 uvicorn[standard]>=0.24.0
 faster-whisper>=1.0.0
 numpy
 mcp>=1.0.0
+
+# Mesh server
+pydantic>=2.0.0
+
+# Optional: NVIDIA NIM
+# grpcio>=1.60.0
+# protobuf>=4.25.0
+
+# Optional: Local embeddings
+# sentence-transformers>=2.2.0
+
+# Dev
 pytest>=7.0.0
 pytest-asyncio>=0.20.0
-sentence-transformers
-torch --index-url https://download.pytorch.org/whl/cpu

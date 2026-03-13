@@ -1,0 +1,11 @@
+{
+  "name": "github",
+  "version": "0.1.0",
+  "auth_type": "token",
+  "description": "Pull PRs, issues, and repos from GitHub via gh CLI",
+  "settings": {
+    "repos": [],
+    "max_results": 20,
+    "cli_command": "gh"
+  }
+}

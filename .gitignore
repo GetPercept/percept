@@ -11,16 +11,20 @@ venv/
 dist/
 build/
 .DS_Store
-data/
 *.db
 *.db-wal
 *.db-shm
+*.sqlite3
+*.lance
+lance_store/
+node_modules/
+
+# Data dirs
+data/
 data/contacts.json
 data/speakers.json
 data/conversations/
 data/summaries/
-*.lance
-lance_store/
 
 # Internal/private
 memory/
@@ -29,7 +33,6 @@ PLAN.md
 PACKAGING.md
 growth/
 content/
-watch-app/
 research/
 docs/CIL_ROADMAP.md
 docs/CLI_PLAYBOOK.md

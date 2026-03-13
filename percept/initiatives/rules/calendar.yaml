@@ -1,0 +1,33 @@
+rules:
+  - name: meeting_prep
+    description: "Gather context before upcoming meetings"
+    conditions:
+      - source: calendar
+        signal_type: meeting_soon
+        operator: lt
+        field: minutes_until
+        value: 60
+        time_window_minutes: 60
+    action:
+      action_type: execute
+      target: "system"
+      template: "Gather context: last emails with {attendees}, open PRs/issues, recent Slack threads for {meeting_title}."
+      require_approval: true
+    cooldown_minutes: 30
+    priority: 2
+    enabled: true
+
+  - name: schedule_conflict
+    description: "Alert on double-booked time slots"
+    conditions:
+      - source: calendar
+        signal_type: double_booked
+        operator: exists
+    action:
+      action_type: notify
+      target: "iMessage:+10000000000"
+      template: "You're double-booked at {time}: {event1} vs {event2}. Which takes priority?"
+      require_approval: false
+    cooldown_minutes: 60
+    priority: 1
+    enabled: true

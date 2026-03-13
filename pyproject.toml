@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "getpercept"
-version = "0.1.2"
-description = "Ambient voice intelligence for AI agents — give your agent ears"
+version = "0.1.0"
+description = "The context layer for AI agents — give your agent ears, eyes, and awareness"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
     {name = "GetPercept", email = "hello@getpercept.ai"},
 ]
-keywords = ["mcp", "voice", "transcription", "ai-agent", "ambient-intelligence", "context"]
+keywords = ["mcp", "voice", "transcription", "ai-agent", "ambient-intelligence", "context", "knowledge-graph"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -25,17 +25,17 @@ classifiers = [
     "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]
 dependencies = [
+    "requests>=2.28",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+audio = [
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
     "faster-whisper>=1.0.0",
     "numpy",
     "mcp>=1.0.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-asyncio>=0.20.0",
 ]
 nvidia = [
     "grpcio>=1.60.0",
@@ -43,6 +43,26 @@ nvidia = [
 ]
 local = [
     "sentence-transformers>=2.2.0",
+]
+mesh = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.0.0",
+]
+all = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "faster-whisper>=1.0.0",
+    "numpy",
+    "mcp>=1.0.0",
+    "grpcio>=1.60.0",
+    "protobuf>=4.25.0",
+    "sentence-transformers>=2.2.0",
+    "pydantic>=2.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.20.0",
 ]
 
 [project.urls]
@@ -52,13 +72,13 @@ Documentation = "https://github.com/GetPercept/percept/blob/main/README.md"
 Issues = "https://github.com/GetPercept/percept/issues"
 
 [project.scripts]
-percept = "src.cli:main"
+percept = "percept.cli:main"
 
 [project.entry-points."mcp.servers"]
-percept = "src.mcp_server:run"
+percept = "percept.mcp.server:run"
 
 [tool.setuptools.packages.find]
-include = ["src*"]
+include = ["percept*", "src*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

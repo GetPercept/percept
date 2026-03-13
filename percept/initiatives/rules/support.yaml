@@ -1,0 +1,23 @@
+rules:
+  - name: support_escalation
+    description: "Enterprise ticket open too long without response"
+    conditions:
+      - source: pylon
+        signal_type: ticket_open
+        operator: gt
+        field: hours
+        value: 4
+        time_window_minutes: 240
+      - source: pylon
+        signal_type: customer_tier
+        operator: eq
+        field: tier
+        value: enterprise
+    action:
+      action_type: escalate
+      target: "iMessage:+10000000000"
+      template: "Enterprise ticket #{ticket_id} open {hours}h without response."
+      require_approval: false
+    cooldown_minutes: 120
+    priority: 1
+    enabled: true

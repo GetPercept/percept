@@ -1,0 +1,11 @@
+{
+  "name": "slack",
+  "version": "0.1.0",
+  "auth_type": "token",
+  "description": "Pull messages, threads, and reactions from Slack",
+  "settings": {
+    "token_env": "SLACK_BOT_TOKEN",
+    "max_results": 20,
+    "mock_mode": true
+  }
+}

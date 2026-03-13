@@ -1,0 +1,17 @@
+rules:
+  - name: usage_spike
+    description: "Customer usage spike — expansion opportunity"
+    conditions:
+      - source: analytics
+        signal_type: usage_spike
+        operator: gt
+        field: percent
+        value: 200
+    action:
+      action_type: notify
+      target: "iMessage:+10000000000"
+      template: "{customer} usage up {percent}%. They're on {plan} plan. Expansion opportunity?"
+      require_approval: false
+    cooldown_minutes: 1440
+    priority: 3
+    enabled: true

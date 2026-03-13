@@ -1,0 +1,11 @@
+{
+  "name": "gmail",
+  "version": "0.1.0",
+  "auth_type": "oauth2",
+  "description": "Pull emails from Gmail via gog CLI",
+  "settings": {
+    "max_results": 20,
+    "cli_command": "gog",
+    "credentials_path": "~/.config/gog/"
+  }
+}
