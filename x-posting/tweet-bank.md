@@ -73,3 +73,13 @@
 - [2026-03-12] "Engineer: \"just add tool use\" to make the agent smarter. The agent: can't tell the difference between excited brainstorming and awkward silence after a layoff announcement. We keep giving AI more hands to act with and zero intuition about when to use them." (posted from @clawdoor4agents — @getpercept not logged into browser)
 - [2026-03-12] REPLY to @iandebode (AI agents trading Ondo tokenized stocks, 111 likes, 10K views): "Cool that the agent can swap $500 into NVDAon permissionlessly. Now imagine if it could also hear the earnings call happening in real time instead of waiting for someone to paste the transcript. Agentic finance + agentic perception is the real unlock."
 - [2026-03-12] LIKED @iandebode tokenized stocks tweet
+- [2026-03-13] "Friday the 13th and somewhere an AI agent just scheduled a meeting over your lunch break because it heard 'anytime works' in your email but couldn't hear your stomach growling. We keep optimizing for calendar Tetris and ignoring the human attached to it." (w/ github link)
+- [2026-03-13] LIKED @omarsar0 memory for AI agents tweet (71 likes, 5.1K views) — reply blocked (403 new account restriction)
+- [2026-03-13] LIKED @Polymarket RentAHuman tweet (7.9K likes, 529K views) — reply blocked (403 new account restriction)
+- [2026-03-13] "Your AI agent has 200 tools, a chain-of-thought reasoning engine, and access to the sum of human knowledge. It also just scheduled your dentist appointment during your kid's school play because nobody told it — and it couldn't hear you promise your daughter you'd be there. The context gap isn't a bug. It's an architecture problem."
+- [2026-03-13] LIKED @barkmeta "AI agents hiring humans" tweet (357 likes, 30K views) — reply blocked (403 new account restriction)
+- [2026-03-13] LIKED @cursor_ai MCP Apps tweet (1.9K likes, 276K views)
+- [2026-03-13] LIKED @claudeai 1M context window announcement (13K likes, 1.6M views) — reply blocked (403 new account restriction)
+- [2026-03-13] LIKED @birdabo Claude 1M context quote tweet (1.5K likes, 157K views) — reply blocked (403 new account restriction)
+- [2026-03-13] "Claude just got 1M token context. GPT-5 is around the corner. Everyone's scaling the brain. Meanwhile the average AI agent still can't tell if you said 'ship it' confidently or 'ship it' sarcastically. Bigger context windows don't help when you have zero context about the room you're in." (w/ github link)
+- [2026-03-13] LIKED @galnagli RentAHuman database leak thread (541 likes, 111K views) — reply blocked (403 new account restriction)
