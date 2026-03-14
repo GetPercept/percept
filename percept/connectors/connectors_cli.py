@@ -26,13 +26,15 @@ def get_registry(mock: bool = False) -> ConnectorRegistry:
     from connectors.gmail.connector import GmailConnector
     from connectors.github.connector import GitHubConnector
     from connectors.slack.connector import SlackConnector
+    from connectors.oura.connector import OuraConnector
 
     gmail = GmailConnector(mock=mock)
     github = GitHubConnector(mock=mock)
     slack = SlackConnector(mock=mock)
+    oura = OuraConnector(mock=mock)
 
     # Auto-authenticate
-    for c in [gmail, github, slack]:
+    for c in [gmail, github, slack, oura]:
         try:
             c.authenticate({})
         except Exception:
@@ -41,6 +43,7 @@ def get_registry(mock: bool = False) -> ConnectorRegistry:
     registry.register(gmail)
     registry.register(github)
     registry.register(slack)
+    registry.register(oura)
 
     return registry
 

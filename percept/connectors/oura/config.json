@@ -1,0 +1,10 @@
+{
+  "name": "oura",
+  "version": "0.1.0",
+  "auth_type": "api_key",
+  "description": "Pull sleep, readiness, activity, and heart rate data from Oura Ring API v2",
+  "settings": {
+    "credentials_path": "~/.config/oura/credentials.json",
+    "lookback_days": 7
+  }
+}
